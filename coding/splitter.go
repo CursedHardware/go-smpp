@@ -1,9 +1,5 @@
 package coding
 
-import (
-	"math"
-)
-
 type Splitter func(rune) int
 
 var (
@@ -27,7 +23,10 @@ func (fn Splitter) Len(input string) (n int) {
 	for _, point := range input {
 		n += fn(point)
 	}
-	return int(math.Ceil(float64(n) / 8))
+	if n%8 != 0 {
+		n += 8 - n%8
+	}
+	return n / 8
 }
 
 func (fn Splitter) Split(input string, limit int) (segments []string) {
