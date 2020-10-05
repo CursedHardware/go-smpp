@@ -7,10 +7,16 @@ import (
 )
 
 func TestRegisteredDelivery(t *testing.T) {
-	expected := byte(0b00010101)
+	expected := byte(0b11110101)
 	var delivery RegisteredDelivery
 	_ = delivery.WriteByte(expected)
+	require.Equal(t, delivery, RegisteredDelivery{
+		MCDeliveryReceipt:           1,
+		SMEOriginatedAcknowledgment: 1,
+		IntermediateNotification:    true,
+		Reserved:                    7,
+	})
 	c, _ := delivery.ReadByte()
 	require.Equal(t, expected, c)
-	require.Equal(t, "00010101", delivery.String())
+	require.Equal(t, "11110101", delivery.String())
 }

@@ -7,6 +7,7 @@ type RegisteredDelivery struct {
 	MCDeliveryReceipt           byte
 	SMEOriginatedAcknowledgment byte
 	IntermediateNotification    bool
+	Reserved                    byte
 }
 
 func (r RegisteredDelivery) ReadByte() (c byte, err error) {
@@ -15,6 +16,7 @@ func (r RegisteredDelivery) ReadByte() (c byte, err error) {
 	if r.IntermediateNotification {
 		c |= 1 << 4
 	}
+	c |= r.Reserved & 0b111 << 5
 	return
 }
 
@@ -22,6 +24,7 @@ func (r *RegisteredDelivery) WriteByte(c byte) error {
 	r.MCDeliveryReceipt = c & 0b11
 	r.SMEOriginatedAcknowledgment = c >> 2 & 0b11
 	r.IntermediateNotification = c>>4&0b1 == 1
+	r.Reserved = c >> 5 & 0b111
 	return nil
 }
 
