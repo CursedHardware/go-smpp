@@ -12,8 +12,8 @@ type DataCoding byte
 
 func (c DataCoding) GoString() string   { return c.String() }
 func (c DataCoding) String() string     { return fmt.Sprintf("%08b", byte(c)) }
-func (c DataCoding) Encoding() Encoding { return encodingMap[c] }
-func (c DataCoding) Splitter() Splitter { return splitterMap[c] }
+func (c DataCoding) Encoding() Encoding { return encodingMap[c&0b1111] }
+func (c DataCoding) Splitter() Splitter { return splitterMap[c&0b1111] }
 
 func BestCoding(input string) DataCoding {
 	switch {
