@@ -36,6 +36,9 @@ func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
 			switch v := (field.Addr().Interface()).(type) {
 			case *Header:
 				err = readHeaderFrom(buf, v)
+				if v.CommandStatus != 0 {
+					return
+				}
 			case io.ByteWriter:
 				var value byte
 				if value, err = buf.ReadByte(); err == nil {
@@ -49,10 +52,7 @@ func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
 			}
 		}
 		n = int64(buf.Size())
-		if err == io.EOF {
-			err = nil
-			return
-		} else if err != nil {
+		if err != nil {
 			err = ErrUnmarshalPDUFailed
 			return
 		}
@@ -92,6 +92,9 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 				} else {
 					err = ErrInvalidSequence
 				}
+				if v.CommandStatus != 0 {
+					goto write
+				}
 			case io.ByteReader:
 				var value byte
 				value, err = v.ReadByte()
@@ -107,6 +110,7 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 			return
 		}
 	}
+write:
 	if p.Field(0).Type() == reflect.TypeOf(Header{}) {
 		data := buf.Bytes()
 		binary.BigEndian.PutUint32(data[0:4], uint32(buf.Len()))
