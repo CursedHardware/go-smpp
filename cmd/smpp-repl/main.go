@@ -70,7 +70,7 @@ func onConnect(c *ishell.Context) {
 	}
 	var host, port, systemId, password, systemType string
 	var enableTLS bool
-	flags := makeFlags(c.Args, func(flags *flag.FlagSet) {
+	flags := makeFlags(func(flags *flag.FlagSet) {
 		flags.StringVar(&host, "host", "", "Host")
 		flags.StringVar(&port, "port", "2775", "Port")
 		flags.StringVar(&systemId, "system-id", "", "System ID")
@@ -141,7 +141,7 @@ func onSendMessage(c *ishell.Context) {
 		return
 	}
 	var source, dest, message string
-	flags := makeFlags(c.Args, func(flags *flag.FlagSet) {
+	flags := makeFlags(func(flags *flag.FlagSet) {
 		flags.StringVar(&source, "source", "", "Source address")
 		flags.StringVar(&dest, "dest", "", "Destination address")
 		flags.StringVar(&message, "message", "Test", "Message Content")
@@ -183,11 +183,12 @@ func onUSSDCommand(c *ishell.Context) {
 		fmt.Println("You are not connected to the server")
 		return
 	}
-	flags := flag.NewFlagSet("send-ussd", flag.ContinueOnError)
 	var source, dest, message string
-	flags.StringVar(&source, "source", "", "Source address")
-	flags.StringVar(&dest, "dest", "", "Destination address")
-	flags.StringVar(&message, "ussd", "*100#", "USSD command")
+	flags := makeFlags(func(flags *flag.FlagSet) {
+		flags.StringVar(&source, "source", "", "Source address")
+		flags.StringVar(&dest, "dest", "", "Destination address")
+		flags.StringVar(&message, "ussd", "*100#", "USSD command")
+	})
 	if err := flags.Parse(c.Args); err != nil {
 		fmt.Println("Error:", err.Error())
 		return
@@ -222,7 +223,7 @@ func onQueryCommand(c *ishell.Context) {
 	}
 	var id, source string
 	var broadcast bool
-	flags := makeFlags(c.Args, func(flags *flag.FlagSet) {
+	flags := makeFlags(func(flags *flag.FlagSet) {
 		flags.StringVar(&id, "id", "", "Message ID")
 		flags.StringVar(&source, "source", "", "Source address")
 		flags.BoolVar(&broadcast, "broadcast", false, "Query Broadcast")
