@@ -49,6 +49,9 @@ func fillAccount(account *Account) {
 	if account.Password == "" {
 		account.Password = configure.DefaultAccount.Password
 	}
+	if account.BindType == "" {
+		account.BindType = configure.DefaultAccount.BindType
+	}
 }
 
 func connect(device Account, hook func(*Payload)) {
