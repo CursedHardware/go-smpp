@@ -31,7 +31,6 @@ func (fn Splitter) Len(input string) (n int) {
 
 func (fn Splitter) Split(input string, limit int) (segments []string) {
 	limit *= 8
-	segments = []string{}
 	points := []rune(input)
 	var start, length int
 	for i := 0; i < len(points); i++ {
