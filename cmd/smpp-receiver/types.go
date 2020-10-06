@@ -5,17 +5,17 @@ import (
 )
 
 type Configuration struct {
-	DefaultAccount Account `json:",omitempty"`
-	Devices        []Account
-	Hook           string
+	Hook           string    `json:"hook"`
+	DefaultAccount Account   `json:"default_account,omitempty"`
+	Devices        []Account `json:"devices"`
 }
 
 //goland:noinspection ALL
 type Account struct {
-	SMSC       string
-	SystemID   string
-	Password   string
-	SystemType string
+	SMSC       string `json:"smsc"`
+	SystemID   string `json:"system_id"`
+	Password   string `json:"password"`
+	SystemType string `json:"system_type"`
 	BindType   string `json:"bind_type"`
 }
 
