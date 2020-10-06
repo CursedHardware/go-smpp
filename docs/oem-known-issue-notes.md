@@ -1,4 +1,4 @@
-# OEM Known issue notes
+# Device-specific Caveats
 
 ## Synway SMG4000 Series
 
