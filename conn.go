@@ -87,7 +87,7 @@ func (c *Conn) Send(packet interface{}) (err error) {
 		return
 	}
 	if c.WriteTimeout > 0 {
-		err = c.parent.SetReadDeadline(time.Now().Add(c.WriteTimeout))
+		err = c.parent.SetWriteDeadline(time.Now().Add(c.WriteTimeout))
 	}
 	if err == nil {
 		_, err = Marshal(c.parent, packet)
@@ -98,17 +98,17 @@ func (c *Conn) Send(packet interface{}) (err error) {
 func (c *Conn) EnquireLink(tick time.Duration, timeout time.Duration) {
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
-	send := func() (err error) {
+	sendEnquireLink := func() {
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
-		_, err = c.Submit(ctx, new(EnquireLink))
-		return
+		_, err := c.Submit(ctx, new(EnquireLink))
+		if err == context.DeadlineExceeded || err == context.Canceled {
+			ticker.Stop()
+			_ = c.Close()
+		}
 	}
 	for {
-		if err := send(); err == context.DeadlineExceeded {
-			_ = c.Close()
-			return
-		}
+		sendEnquireLink()
 		<-ticker.C
 	}
 }
