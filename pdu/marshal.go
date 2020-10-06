@@ -49,7 +49,10 @@ func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
 			}
 		}
 		n = int64(buf.Size())
-		if err != nil {
+		if err == io.EOF {
+			err = nil
+			return
+		} else if err != nil {
 			err = ErrUnmarshalPDUFailed
 			return
 		}
