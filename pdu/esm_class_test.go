@@ -11,6 +11,12 @@ func TestESMClass(t *testing.T) {
 	var esm ESMClass
 	_ = esm.WriteByte(expected)
 	c, _ := esm.ReadByte()
+	require.Equal(t, esm, ESMClass{
+		MessageMode:  1,
+		MessageType:  3,
+		UDHIndicator: true,
+		ReplyPath:    true,
+	})
 	require.Equal(t, expected, c)
 	require.Equal(t, "11001101", esm.String())
 }
