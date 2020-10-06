@@ -28,6 +28,7 @@ func main() {
 	shell.AddCmd(&ishell.Cmd{Name: "disconnect", Help: "disconnect", Func: onDisconnect})
 	shell.AddCmd(&ishell.Cmd{Name: "send-message", Help: "send message", Func: onSendMessage})
 	shell.AddCmd(&ishell.Cmd{Name: "send-ussd", Help: "send ussd", Func: onUSSDCommand})
+	shell.AddCmd(&ishell.Cmd{Name: "query", Help: "query status", Func: onQueryCommand})
 	go onHandler()
 	shell.Run()
 }
@@ -67,15 +68,16 @@ func onConnect(c *ishell.Context) {
 		fmt.Println("use `disconnect` command, disconnect")
 		return
 	}
-	flags := flag.NewFlagSet("connect", flag.ContinueOnError)
 	var host, port, systemId, password, systemType string
 	var enableTLS bool
-	flags.StringVar(&host, "host", "", "Host")
-	flags.StringVar(&port, "port", "2775", "Port")
-	flags.StringVar(&systemId, "system-id", "", "System ID")
-	flags.StringVar(&password, "password", "", "Password")
-	flags.StringVar(&systemType, "system-type", "", "System Type")
-	flags.BoolVar(&enableTLS, "tls", false, "Use TLS Mode")
+	flags := makeFlags(c.Args, func(flags *flag.FlagSet) {
+		flags.StringVar(&host, "host", "", "Host")
+		flags.StringVar(&port, "port", "2775", "Port")
+		flags.StringVar(&systemId, "system-id", "", "System ID")
+		flags.StringVar(&password, "password", "", "Password")
+		flags.StringVar(&systemType, "system-type", "", "System Type")
+		flags.BoolVar(&enableTLS, "tls", false, "Use TLS Mode")
+	})
 	if err := flags.Parse(c.Args); err != nil {
 		fmt.Println("Error:", err.Error())
 		return
@@ -138,11 +140,12 @@ func onSendMessage(c *ishell.Context) {
 		fmt.Println("You are not connected to the server")
 		return
 	}
-	flags := flag.NewFlagSet("send-message", flag.ContinueOnError)
 	var source, dest, message string
-	flags.StringVar(&source, "source", "", "Source address")
-	flags.StringVar(&dest, "dest", "", "Destination address")
-	flags.StringVar(&message, "message", "Test", "Message Content")
+	flags := makeFlags(c.Args, func(flags *flag.FlagSet) {
+		flags.StringVar(&source, "source", "", "Source address")
+		flags.StringVar(&dest, "dest", "", "Destination address")
+		flags.StringVar(&message, "message", "Test", "Message Content")
+	})
 	if err := flags.Parse(c.Args); err != nil {
 		fmt.Println("Error:", err.Error())
 		return
@@ -202,6 +205,46 @@ func onUSSDCommand(c *ishell.Context) {
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		return
+	}
+	spew.Dump(packet)
+	resp, err := conn.Submit(context.Background(), packet)
+	if err != nil {
+		fmt.Println("Error:", err.Error())
+		return
+	}
+	spew.Dump(resp)
+}
+
+func onQueryCommand(c *ishell.Context) {
+	if conn == nil {
+		fmt.Println("You are not connected to the server")
+		return
+	}
+	var id, source string
+	var broadcast bool
+	flags := makeFlags(c.Args, func(flags *flag.FlagSet) {
+		flags.StringVar(&id, "id", "", "Message ID")
+		flags.StringVar(&source, "source", "", "Source address")
+		flags.BoolVar(&broadcast, "broadcast", false, "Query Broadcast")
+	})
+	if err := flags.Parse(c.Args); err != nil {
+		fmt.Println("Error:", err.Error())
+		return
+	} else if flags.NFlag() < 2 {
+		flags.Usage()
+		return
+	}
+	var packet pdu.Responsable
+	if !broadcast {
+		packet = &pdu.QuerySM{
+			MessageID:  id,
+			SourceAddr: pdu.Address{TON: 1, NPI: 1, No: source},
+		}
+	} else {
+		packet = &pdu.QueryBroadcastSM{
+			MessageID:  id,
+			SourceAddr: pdu.Address{TON: 1, NPI: 1, No: source},
+		}
 	}
 	spew.Dump(packet)
 	resp, err := conn.Submit(context.Background(), packet)
