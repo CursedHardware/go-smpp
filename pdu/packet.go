@@ -253,7 +253,7 @@ type QuerySMResp struct {
 	Header       Header `id:"80000003"`
 	MessageID    string
 	FinalDate    string
-	MessageState byte // section 4.7.15, page 127
+	MessageState MessageState
 	ErrorCode    CommandStatus
 }
 

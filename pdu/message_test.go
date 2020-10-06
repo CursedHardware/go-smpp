@@ -36,6 +36,11 @@ func TestShortMessage(t *testing.T) {
 	require.NotEmpty(t, parsed)
 }
 
+func TestMessageState_String(t *testing.T) {
+	require.Equal(t, "SCHEDULED", MessageState(0).String())
+	require.Equal(t, "255", MessageState(0xFF).String())
+}
+
 //goland:noinspection SpellCheckingInspection
 func TestComposeMultipartShortMessage(t *testing.T) {
 	reference := uint16(0xFFFF)
