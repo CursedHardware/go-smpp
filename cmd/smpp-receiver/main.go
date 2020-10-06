@@ -31,7 +31,11 @@ func init() {
 func main() {
 	for _, device := range configure.Devices {
 		fillAccount(&device)
-		go connect(device, runProgram)
+		go func(device Account) {
+			for {
+				connect(device, runProgram)
+			}
+		}(device)
 	}
 	select {}
 }
@@ -54,6 +58,7 @@ func fillAccount(account *Account) {
 	}
 }
 
+//goland:noinspection GoUnhandledErrorResult
 func connect(device Account, hook func(*Payload)) {
 	parent, err := net.Dial("tcp", device.SMSC)
 	if err != nil {
@@ -63,6 +68,7 @@ func connect(device Account, hook func(*Payload)) {
 	conn := smpp.NewConn(ctx, parent)
 	conn.ReadTimeout = time.Second * 30
 	go conn.Watch()
+	defer conn.Close()
 	var request pdu.Responsable
 	switch device.BindType {
 	case "", "receiver":
@@ -70,21 +76,21 @@ func connect(device Account, hook func(*Payload)) {
 			SystemID:   device.SystemID,
 			Password:   device.Password,
 			SystemType: device.SystemType,
-			Version:    pdu.SMPPVersion50,
+			Version:    pdu.SMPPVersion34,
 		}
 	case "transceiver":
 		request = &pdu.BindTransceiver{
 			SystemID:   device.SystemID,
 			Password:   device.Password,
 			SystemType: device.SystemType,
-			Version:    pdu.SMPPVersion50,
+			Version:    pdu.SMPPVersion34,
 		}
 	case "transmitter":
 		request = &pdu.BindTransmitter{
 			SystemID:   device.SystemID,
 			Password:   device.Password,
 			SystemType: device.SystemType,
-			Version:    pdu.SMPPVersion50,
+			Version:    pdu.SMPPVersion34,
 		}
 	default:
 		log.Fatalln("unsupported bind type")
@@ -121,9 +127,9 @@ func connect(device Account, hook func(*Payload)) {
 		switch p := packet.(type) {
 		case *pdu.DeliverSM:
 			addDeliverSM(p)
-			_ = conn.Send(ctx, p.Resp())
+			_ = conn.Send(p.Resp())
 		case pdu.Responsable:
-			_ = conn.Send(ctx, p.Resp())
+			_ = conn.Send(p.Resp())
 		}
 	}
 }

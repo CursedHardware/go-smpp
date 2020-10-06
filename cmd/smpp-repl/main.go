@@ -46,12 +46,12 @@ func onHandler() {
 				rand.Read(messageId)
 				resp.MessageID = hex.EncodeToString(messageId)
 				spew.Dump(resp)
-				err = conn.Send(context.Background(), resp)
+				err = conn.Send(resp)
 				if err != nil {
 					fmt.Println(err)
 				}
 			case pdu.Responsable:
-				err = conn.Send(context.Background(), p.Resp())
+				err = conn.Send(p.Resp())
 				if err != nil {
 					fmt.Println(err)
 				}
