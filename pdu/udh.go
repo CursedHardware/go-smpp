@@ -43,12 +43,15 @@ func (h *UserDataHeader) ReadFrom(r io.Reader) (n int64, err error) {
 
 func (h UserDataHeader) WriteTo(w io.Writer) (n int64, err error) {
 	if h == nil {
-		return 0, nil
+		return
 	}
 	var buf bytes.Buffer
 	buf.WriteByte(0)
 	for _, element := range h {
-		_, _ = element.WriteTo(&buf)
+		_, err = element.WriteTo(&buf)
+		if err != nil {
+			return
+		}
 	}
 	data := buf.Bytes()
 	data[0] = byte(len(data)) - 1

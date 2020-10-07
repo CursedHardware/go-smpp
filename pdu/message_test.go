@@ -25,8 +25,15 @@ func TestShortMessage(t *testing.T) {
 		TotalParts: 1,
 		Sequence:   1,
 	}.Element())
+	_, err = message.WriteTo(&buf)
+	require.NoError(t, err)
+
+	message.UDHeader[0].Data = make([]byte, 0x100)
+	_, err = message.WriteTo(&buf)
+	require.Error(t, err)
 
 	message.Message = make([]byte, MaxShortMessageLength+1)
+	message.UDHeader = nil
 	_, err = message.WriteTo(&buf)
 	require.Error(t, err)
 

@@ -49,10 +49,13 @@ func (p ShortMessage) WriteTo(w io.Writer) (n int64, err error) {
 	buf.WriteByte(p.DefaultMessageID)
 	start := buf.Len()
 	buf.WriteByte(0)
-	_, _ = p.UDHeader.WriteTo(&buf)
+	_, err = p.UDHeader.WriteTo(&buf)
+	if err != nil {
+		return
+	}
 	buf.Write(p.Message)
 	data := buf.Bytes()
-	data[start] = byte((len(data) - 1) - start)
+	data[start] = byte(len(data) - 1 - start)
 	return buf.WriteTo(w)
 }
 
