@@ -1,12 +1,12 @@
 # Wireshark
 
-1. Discord `enquire_link` and `enquire_link_resp`
+1. Discard `enquire_link` and `enquire_link_resp` packets
 
     ```plain
     smpp and !(smpp.command_id in {0x00000015 0x80000015})
     ```
 
-2. Capture
+2. Capturing
 
     ```shell
     tcpdump -w smpp.pcap port 2775
