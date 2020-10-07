@@ -136,7 +136,7 @@ var mapping = []struct {
 			ESMClass:           ESMClass{MessageType: 3, MessageMode: 1},
 			RegisteredDelivery: RegisteredDelivery{MCDeliveryReceipt: 3, IntermediateNotification: true},
 			DataCoding:         0b01011011,
-			Tags:               Tags{{7, []byte{0x5F}}},
+			Tags:               Tags{0x0007: []byte{0x5F}},
 		},
 		Response:       &DataSMResp{Header: Header{17, 0x80000103, 0, 13}},
 		ResponsePacket: "0000001180000103000000000000000d00",

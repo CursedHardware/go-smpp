@@ -200,7 +200,7 @@ func onUSSDCommand(c *ishell.Context) {
 		ServiceType: "USSD",
 		SourceAddr:  pdu.Address{TON: 1, NPI: 1, No: source},
 		DestAddr:    pdu.Address{TON: 1, NPI: 1, No: dest},
-		Tags:        pdu.Tags{{Tag: 0x5010, Data: []byte{0x02}}},
+		Tags:        pdu.Tags{0x5010: []byte{0x02}},
 	}
 	err := packet.Message.Compose(message)
 	if err != nil {

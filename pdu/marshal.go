@@ -32,7 +32,7 @@ func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
 			if value, err = buf.ReadByte(); err == nil {
 				field.SetBool(value == 1)
 			}
-		case reflect.Slice, reflect.Struct:
+		case reflect.Array, reflect.Map, reflect.Slice, reflect.Struct:
 			switch v := (field.Addr().Interface()).(type) {
 			case *Header:
 				err = readHeaderFrom(buf, v)
@@ -79,7 +79,7 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 				value = 1
 			}
 			buf.WriteByte(value)
-		case reflect.Array, reflect.Slice, reflect.Struct:
+		case reflect.Array, reflect.Map, reflect.Slice, reflect.Struct:
 			switch v := field.Addr().Interface().(type) {
 			case *Header:
 				var parsed uint64
