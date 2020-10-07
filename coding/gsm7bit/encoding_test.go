@@ -50,14 +50,6 @@ func TestGSM7Encoding(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, decodedText, string(decoded), hex.EncodeToString(encoded))
 	}
-	for _, encoded := range invalidDecoder {
-		_, _ = decoder.Bytes(encoded)
-	}
-}
-
-func TestGSM7Encoding_invalid(t *testing.T) {
-	encoder := Packed.NewEncoder()
-	decoder := Packed.NewDecoder()
 	for _, input := range invalidEncoder {
 		_, err := encoder.Bytes(input)
 		require.Error(t, err)
@@ -66,9 +58,5 @@ func TestGSM7Encoding_invalid(t *testing.T) {
 		_, err := decoder.Bytes(encoded)
 		require.Error(t, err)
 	}
-}
-
-func TestGSM7Encoding_edge_case(t *testing.T) {
-	encoder := Packed.NewEncoder()
 	_, _ = encoder.Bytes([]byte("1234567\r"))
 }
