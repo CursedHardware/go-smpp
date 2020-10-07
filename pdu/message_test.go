@@ -19,16 +19,15 @@ func TestShortMessage(t *testing.T) {
 	err = message.Compose(strings.Repeat("abc", 54))
 	require.Error(t, err)
 
+	header := ConcatenatedHeader{Reference: 1, TotalParts: 1, Sequence: 1}
+
 	message.Message = make([]byte, 100)
-	message.UDHeader = append(message.UDHeader, ConcatenatedHeader{
-		Reference:  1,
-		TotalParts: 1,
-		Sequence:   1,
-	}.Element())
+	message.UDHeader = make(UserDataHeader)
+	header.Set(message.UDHeader)
 	_, err = message.WriteTo(&buf)
 	require.NoError(t, err)
 
-	message.UDHeader[0].Data = make([]byte, 0x100)
+	message.UDHeader[0x00] = make([]byte, 0x100)
 	_, err = message.WriteTo(&buf)
 	require.Error(t, err)
 
@@ -57,12 +56,12 @@ func TestComposeMultipartShortMessage(t *testing.T) {
 	expected := []ShortMessage{
 		{
 			Message:    []byte(input[:133]),
-			UDHeader:   UserDataHeader{{ID: 0x08, Data: []byte{0xFF, 0xFF, 0x02, 0x01}}},
+			UDHeader:   UserDataHeader{0x08: []byte{0xFF, 0xFF, 0x02, 0x01}},
 			DataCoding: coding.Latin1Coding,
 		},
 		{
 			Message:    []byte(input[133:]),
-			UDHeader:   UserDataHeader{{ID: 0x08, Data: []byte{0xFF, 0xFF, 0x02, 0x02}}},
+			UDHeader:   UserDataHeader{0x08: []byte{0xFF, 0xFF, 0x02, 0x02}},
 			DataCoding: coding.Latin1Coding,
 		},
 	}
@@ -95,7 +94,7 @@ func TestCombineMultipartDeliverSM(t *testing.T) {
 		Message: ShortMessage{Message: []byte(""), DataCoding: coding.Latin1Coding},
 	})
 	for i := 1; i < 3; i++ {
-		header := UserDataHeader{{ID: 0x08, Data: []byte{0xFF, 0xFF, 0x02, byte(i)}}}
+		header := UserDataHeader{0x08: []byte{0xFF, 0xFF, 0x02, byte(i)}}
 		addDeliverSM(&DeliverSM{
 			Message: ShortMessage{Message: []byte(""), UDHeader: header, DataCoding: coding.Latin1Coding},
 		})

@@ -5,35 +5,44 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"sort"
 )
 
-// UserDataHeader: ID:Data
-type UserDataHeader []InfoElement
+type UserDataHeader map[byte][]byte
 
 func (h UserDataHeader) Len() (length int) {
 	if h == nil {
 		return 0
 	}
 	length = 1
-	for _, element := range h {
+	for _, data := range h {
 		length += 2
-		length += len(element.Data)
+		length += len(data)
 	}
 	return
 }
 
 func (h *UserDataHeader) ReadFrom(r io.Reader) (n int64, err error) {
 	buf := bufio.NewReader(r)
-	header := UserDataHeader{}
-	var element InfoElement
+	header := make(UserDataHeader)
 	length, err := buf.ReadByte()
-	if err == nil {
-		for i := 0; i < int(length); {
-			if _, err = element.ReadFrom(buf); err == nil {
-				header = append(header, element)
-			}
-			i = buf.Size()
+	if err != nil {
+		return
+	}
+	var id byte
+	var data []byte
+	for i := 0; i < int(length); {
+		if id, err = buf.ReadByte(); err == nil {
+			length, err = buf.ReadByte()
 		}
+		if length > 0 {
+			data = make([]byte, length)
+			_, err = buf.Read(data)
+		}
+		if err == nil {
+			header[id] = data
+		}
+		i = buf.Size()
 	}
 	if len(header) > 0 {
 		*h = header
@@ -45,13 +54,22 @@ func (h UserDataHeader) WriteTo(w io.Writer) (n int64, err error) {
 	if h == nil {
 		return
 	}
+	var keys []byte
+	for id := range h {
+		keys = append(keys, id)
+	}
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	var buf bytes.Buffer
 	buf.WriteByte(0)
-	for _, element := range h {
-		_, err = element.WriteTo(&buf)
-		if err != nil {
+	err = ErrDataTooLarge
+	for _, id := range keys {
+		data := h[id]
+		if len(data) > 0xFF {
 			return
 		}
+		buf.WriteByte(id)
+		buf.WriteByte(byte(len(data)))
+		buf.Write(data)
 	}
 	data := buf.Bytes()
 	data[0] = byte(len(data)) - 1
@@ -59,19 +77,19 @@ func (h UserDataHeader) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (h UserDataHeader) ConcatenatedHeader() *ConcatenatedHeader {
-	for _, element := range h {
-		switch element.ID {
+	for id, data := range h {
+		switch id {
 		case 0x00:
 			return &ConcatenatedHeader{
-				Reference:  uint16(element.Data[0]),
-				TotalParts: element.Data[1],
-				Sequence:   element.Data[2],
+				Reference:  uint16(data[0]),
+				TotalParts: data[1],
+				Sequence:   data[2],
 			}
 		case 0x08:
 			return &ConcatenatedHeader{
-				Reference:  binary.BigEndian.Uint16(element.Data[0:2]),
-				TotalParts: element.Data[2],
-				Sequence:   element.Data[3],
+				Reference:  binary.BigEndian.Uint16(data[0:2]),
+				TotalParts: data[2],
+				Sequence:   data[3],
 			}
 		}
 	}

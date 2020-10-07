@@ -25,19 +25,16 @@ func ComposeMultipartShortMessage(input string, coding DataCoding, reference uin
 	}
 	header.TotalParts = byte(len(segments))
 	encoder := coding.Encoding().NewEncoder()
-	var message []byte
+	part := ShortMessage{DataCoding: coding}
 	for _, segment := range segments {
 		encoder.Reset()
-		message, err = encoder.Bytes([]byte(segment))
-		if err != nil {
+		part.UDHeader = make(UserDataHeader)
+		if part.Message, err = encoder.Bytes([]byte(segment)); err != nil {
 			return
 		}
 		header.Sequence++
-		parts = append(parts, ShortMessage{
-			DataCoding: coding,
-			UDHeader:   UserDataHeader{header.Element()},
-			Message:    message,
-		})
+		header.Set(part.UDHeader)
+		parts = append(parts, part)
 	}
 	return
 }
