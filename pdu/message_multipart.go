@@ -57,7 +57,11 @@ func CombineMultipartDeliverSM(on func([]*DeliverSM)) func(*DeliverSM) {
 		if header == nil {
 			on([]*DeliverSM{p})
 		} else {
-			id := fmt.Sprint(p.SourceAddr, p.DestAddr, header.Reference)
+			id := fmt.Sprint(
+				p.SourceAddr.TON, p.SourceAddr.NPI, p.SourceAddr.No,
+				p.DestAddr.TON, p.DestAddr.NPI, p.DestAddr.No,
+				header.Reference,
+			)
 			if _, ok := registry[id]; !ok {
 				registry[id] = make([]*DeliverSM, header.TotalParts)
 			}
