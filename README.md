@@ -44,7 +44,7 @@ Supported encodings:
 2. Handshake
 
     ```go
-    resp, err := conn.Submit(ctx, &pdu.BindTransmitter{
+    resp, err := conn.Submit(context.Background(), &pdu.BindTransmitter{
         SystemID:   "your system id",
         Password:   "your password",
         SystemType: "your system type",
@@ -85,7 +85,7 @@ Supported encodings:
         packet := <-conn.PDU()
         // reply a responsable packet
         if p, ok := packet.(pdu.Responsable); ok {
-            err := conn.Send(context.Background(), p.Resp())
+            err := conn.Send(p.Resp())
             if err != nil {
                 fmt.Println(err)
             }
