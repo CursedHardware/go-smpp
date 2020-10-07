@@ -54,7 +54,47 @@ func TestSplit(t *testing.T) {
 }
 
 func TestDataCoding(t *testing.T) {
-	require.Nil(t, DataCoding(0b11111111).Encoding())
+	coding, class := DataCoding(0b11111111).MessageClass()
+	require.Equal(t, UCS2Coding, coding)
+	require.Equal(t, 3, class)
+
+	{
+		dataCoding := DataCoding(0b11000000)
+		coding, active, kind := dataCoding.MessageWaitingInfo()
+		require.Equal(t, NoCoding, coding)
+		require.False(t, active)
+		require.Equal(t, 0, kind)
+		require.Nil(t, dataCoding.Encoding())
+		require.Nil(t, dataCoding.Splitter())
+	}
+	{
+		dataCoding := DataCoding(0b11010000)
+		coding, active, kind := dataCoding.MessageWaitingInfo()
+		require.Equal(t, GSM7BitCoding, coding)
+		require.False(t, active)
+		require.Equal(t, 0, kind)
+		require.NotNil(t, dataCoding.Encoding())
+		require.NotNil(t, dataCoding.Splitter())
+	}
+	{
+		dataCoding := DataCoding(0b11100000)
+		coding, active, kind := dataCoding.MessageWaitingInfo()
+		require.Equal(t, UCS2Coding, coding)
+		require.False(t, active)
+		require.Equal(t, 0, kind)
+		require.NotNil(t, dataCoding.Encoding())
+		require.NotNil(t, dataCoding.Splitter())
+	}
+	{
+		dataCoding := DataCoding(0b11110000)
+		coding, active, kind := dataCoding.MessageWaitingInfo()
+		require.Equal(t, NoCoding, coding)
+		require.False(t, active)
+		require.Equal(t, -1, kind)
+		require.NotNil(t, dataCoding.Encoding())
+		require.NotNil(t, dataCoding.Splitter())
+	}
+	require.Nil(t, NoCoding.Encoding())
 	require.Equal(t, DataCoding(0b11111111).GoString(), "11111111")
 	require.NotEmpty(t, UCS2Coding.GoString())
 	require.NotNil(t, UCS2Coding.Encoding())
@@ -78,5 +118,5 @@ func TestBestCoding(t *testing.T) {
 }
 
 func TestBestSplitter(t *testing.T) {
-	require.Nil(t, DataCoding(0b11111111).Splitter())
+	require.Nil(t, NoCoding.Splitter())
 }

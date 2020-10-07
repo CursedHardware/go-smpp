@@ -1,8 +1,10 @@
 package coding
 
 import (
+	"fmt"
+
 	"github.com/NiceLabs/go-smpp/coding/gsm7bit"
-	"golang.org/x/text/encoding"
+	. "golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/encoding/korean"
@@ -10,6 +12,63 @@ import (
 )
 
 // DataCoding see SMPP v5, section 4.7.7 (123p)
+
+type DataCoding byte
+
+func (c DataCoding) GoString() string {
+	return c.String()
+}
+
+func (c DataCoding) String() string {
+	return fmt.Sprintf("%08b", byte(c))
+}
+
+func (c DataCoding) MessageWaitingInfo() (coding DataCoding, active bool, kind int) {
+	kind = -1
+	coding = NoCoding
+	switch c >> 4 & 0b1111 {
+	case 0b1100:
+	case 0b1101:
+		coding = GSM7BitCoding
+	case 0b1110:
+		coding = UCS2Coding
+	default:
+		return
+	}
+	active = c>>3 == 1
+	kind = int(c & 0b11)
+	return
+}
+
+func (c DataCoding) MessageClass() (coding DataCoding, class int) {
+	class = int(c & 0b11)
+	coding = GSM7BitCoding
+	if c>>4&0b1111 != 0b1111 {
+		coding = NoCoding
+		class = -1
+	} else if c>>2&0b1 == 1 {
+		coding = UCS2Coding
+	}
+	return
+}
+
+func (c DataCoding) Encoding() Encoding {
+	if coding, _, kind := c.MessageWaitingInfo(); kind != -1 {
+		return encodingMap[coding]
+	} else if coding, class := c.MessageClass(); class != -1 {
+		return encodingMap[coding]
+	}
+	return encodingMap[c]
+}
+
+func (c DataCoding) Splitter() Splitter {
+	if coding, _, kind := c.MessageWaitingInfo(); kind != -1 {
+		return splitterMap[coding]
+	} else if coding, class := c.MessageClass(); class != -1 {
+		return splitterMap[coding]
+	}
+	return splitterMap[c]
+}
 
 const (
 	GSM7BitCoding   DataCoding = 0b00000000 // GSM 7Bit
@@ -25,7 +84,7 @@ const (
 	NoCoding        DataCoding = 0b10111111 // Reserved (Non-specification definition)
 )
 
-var encodingMap = map[DataCoding]encoding.Encoding{
+var encodingMap = map[DataCoding]Encoding{
 	GSM7BitCoding:   gsm7bit.Packed,
 	ASCIICoding:     charmap.ISO8859_1,
 	Latin1Coding:    charmap.ISO8859_1,
