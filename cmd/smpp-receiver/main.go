@@ -9,6 +9,7 @@ import (
 	"net"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/NiceLabs/go-smpp"
@@ -16,6 +17,7 @@ import (
 )
 
 var configure = new(Configuration)
+var mutex sync.Mutex
 
 func init() {
 	configFile, err := ioutil.ReadFile("configure.json")
@@ -112,6 +114,8 @@ func connect(device Account, hook func(*Payload)) {
 
 //goland:noinspection GoUnhandledErrorResult
 func runProgram(message *Payload) {
+	mutex.Lock()
+	defer mutex.Unlock()
 	log.Printf("%s @ %s | %s -> %s", message.SMSC, message.SystemID, message.Source, message.Target)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
 	defer cancel()
