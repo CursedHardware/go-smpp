@@ -103,8 +103,7 @@ func (c *Conn) EnquireLink(tick time.Duration, timeout time.Duration) {
 	sendEnquireLink := func() {
 		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
-		_, err := c.Submit(ctx, new(EnquireLink))
-		if err == context.DeadlineExceeded || err == context.Canceled {
+		if _, err := c.Submit(ctx, new(EnquireLink)); err != nil {
 			ticker.Stop()
 			_ = c.Close()
 		}
