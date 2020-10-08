@@ -16,7 +16,6 @@ type Account struct {
 	SystemID   string `json:"system_id"`
 	Password   string `json:"password"`
 	SystemType string `json:"system_type"`
-	BindType   string `json:"bind_type"`
 }
 
 //goland:noinspection ALL
