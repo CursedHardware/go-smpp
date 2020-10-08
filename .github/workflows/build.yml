@@ -30,14 +30,14 @@ jobs:
         with:
           pkg: cmd/smpp-receiver
           prefix: smpp-receiver
-          targets: windows/amd64,linux/amd64,darwin/amd64
+          targets: linux/amd64,darwin/amd64
           ldflags: -s -w
       - name: Generate build files (smpp-repl)
         uses: crazy-max/ghaction-xgo@v1
         with:
           pkg: cmd/smpp-repl
           prefix: smpp-repl
-          targets: windows/amd64,linux/amd64,darwin/amd64
+          targets: linux/amd64,darwin/amd64
           ldflags: -s -w
       - name: Compression (UPX)
         run: upx build/*
