@@ -26,12 +26,15 @@ Supported encodings:
 - If you do not like the default [conn.go](conn.go) implementation, you can easily replace it.
 - [Device-specific Caveats](docs/device-specific-caveats.md)
 
-## Example
+## Command line tools
 
-> Sample Tools
->
-> 1. [smpp-receiver](cmd/smpp-receiver)<br>SMPP Simple Receiver tool
-> 2. [smpp-repl](cmd/smpp-repl)<br>SMPP Simple Test tool
+1. [smpp-receiver](cmd/smpp-receiver)
+<br>SMPP Simple Receiver tool
+
+2. [smpp-repl](cmd/smpp-repl)
+<br>SMPP Simple Test tool
+
+## Example
 
 1. Connect to the Remote (SMPP server)
 
