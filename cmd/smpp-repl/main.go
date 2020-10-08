@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -19,9 +18,9 @@ import (
 
 var conn *smpp.Conn
 
-func main() {
-	shell := ishell.New()
-	shell.Println("Short Message Peer-to-Peer interactive shell")
+var shell = ishell.New()
+
+func init() {
 	shell.AutoHelp(true)
 	shell.SetHistoryPath(".smpp_repl_history")
 	shell.AddCmd(&ishell.Cmd{Name: "connect", Help: "connect to server", Func: onConnect})
@@ -29,34 +28,31 @@ func main() {
 	shell.AddCmd(&ishell.Cmd{Name: "send-message", Help: "send message", Func: onSendMessage})
 	shell.AddCmd(&ishell.Cmd{Name: "send-ussd", Help: "send ussd", Func: onUSSDCommand})
 	shell.AddCmd(&ishell.Cmd{Name: "query", Help: "query status", Func: onQueryCommand})
-	go onHandler()
+}
+
+func main() {
+	shell.Println("Short Message Peer-to-Peer interactive shell")
 	shell.Run()
 }
 
-func onHandler() {
+func onHandler(conn *smpp.Conn) {
 	var err error
-	for conn != nil {
-		for {
-			packet := <-conn.PDU()
-			spew.Dump(packet)
-			switch p := packet.(type) {
-			case *pdu.DeliverSM:
-				resp := p.Resp().(*pdu.DeliverSMResp)
-				messageId := make([]byte, 32)
-				rand.Read(messageId)
-				resp.MessageID = hex.EncodeToString(messageId)
-				spew.Dump(resp)
-				err = conn.Send(resp)
-				if err != nil {
-					fmt.Println(err)
-				}
-			case pdu.Responsable:
-				err = conn.Send(p.Resp())
-				if err != nil {
-					fmt.Println(err)
-				}
+	for {
+		packet := <-conn.PDU()
+		if packet == nil {
+			return
+		}
+		shell.ShowPrompt(false)
+		shell.Println()
+		spew.Dump(packet)
+		if p, ok := packet.(pdu.Responsable); ok {
+			resp := p.Resp()
+			spew.Dump(resp)
+			if err = conn.Send(resp); err != nil {
+				fmt.Println(err)
 			}
 		}
+		shell.ShowPrompt(true)
 	}
 }
 
@@ -101,10 +97,11 @@ func onConnect(c *ishell.Context) {
 	conn.WriteTimeout = time.Minute
 	conn.ReadTimeout = time.Minute
 	go conn.Watch()
+	go onHandler(conn)
 	fmt.Printf("Connect %q successfully\n", address)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	resp, err := conn.Submit(ctx, &pdu.BindTransmitter{
+	resp, err := conn.Submit(ctx, &pdu.BindReceiver{
 		SystemID:   systemId,
 		Password:   password,
 		SystemType: systemType,
