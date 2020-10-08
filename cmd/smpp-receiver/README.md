@@ -1,6 +1,6 @@
 # SMPP Receiver
 
-The program receive `deliver_sm` message and call local hook
+This simple program receive `deliver_sm` message and call a local hook function
 
 ## Configuration
 
@@ -20,7 +20,7 @@ Write to `configure.json` file:
 }
 ```
 
-hook sample script:
+Sample hook script:
 
 ```python
 #!/usr/bin/env python3
