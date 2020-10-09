@@ -35,6 +35,7 @@ func NewConn(ctx context.Context, parent net.Conn) *Conn {
 	}
 }
 
+//goland:noinspection SpellCheckingInspection
 func (c *Conn) Watch() {
 	defer c.cancel()
 	var err error
@@ -50,7 +51,15 @@ func (c *Conn) Watch() {
 		}
 		if packet, err = ReadPDU(c.parent); err == io.EOF {
 			return
-		} else if err != nil {
+		} else if status, ok := err.(CommandStatus); err != nil {
+			if !ok {
+				status = ErrUnknownError
+			}
+			sequence := ReadSequence(packet)
+			_ = c.Send(&GenericNACK{
+				Header: Header{CommandStatus: status, Sequence: sequence},
+				Tags:   Tags{0xFFFF: []byte(err.Error())},
+			})
 			continue
 		} else if callback, ok := c.pending[ReadSequence(packet)]; ok {
 			callback(packet)

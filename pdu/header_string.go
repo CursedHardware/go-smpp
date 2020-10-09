@@ -82,3 +82,7 @@ func (c CommandStatus) String() string {
 	}
 	return fmt.Sprintf("%08X", uint32(c))
 }
+
+func (c CommandStatus) Error() string {
+	return c.String()
+}

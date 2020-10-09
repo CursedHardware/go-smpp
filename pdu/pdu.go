@@ -16,11 +16,12 @@ func ReadPDU(r io.Reader) (pdu interface{}, err error) {
 		_, err = r.Read(body)
 	}
 	if err != nil {
+		err = ErrInvalidCommandLength
 		return
 	}
 	t, ok := types[header.CommandID]
 	if !ok {
-		err = ErrUnknownCommandID
+		err = ErrInvalidCommandID
 		return
 	}
 	pdu = reflect.New(t).Interface()

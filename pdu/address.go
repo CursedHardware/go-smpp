@@ -50,7 +50,7 @@ func (p *DestinationAddresses) ReadFrom(r io.Reader) (n int64, err error) {
 	buf := bufio.NewReader(r)
 	count, err := buf.ReadByte()
 	if err != nil {
-		err = ErrCannotRead
+		err = ErrInvalidCommandLength
 		return
 	}
 	*p = DestinationAddresses{}
@@ -58,18 +58,21 @@ func (p *DestinationAddresses) ReadFrom(r io.Reader) (n int64, err error) {
 	var value string
 	var address Address
 	for i := byte(0); i < count; i++ {
-		destFlag, err = buf.ReadByte()
-		if destFlag == 1 {
+		switch destFlag, _ = buf.ReadByte(); destFlag {
+		case 1:
 			if _, err = address.ReadFrom(buf); err == nil {
 				p.Addresses = append(p.Addresses, address)
 			}
-		} else if destFlag == 2 {
+		case 2:
 			if value, err = readCString(buf); err == nil {
 				p.DistributionList = append(p.DistributionList, value)
 			}
+		default:
+			err = ErrInvalidDestFlag
+			return
 		}
 		if err != nil {
-			err = ErrCannotRead
+			err = ErrInvalidCommandLength
 			return
 		}
 	}
@@ -79,7 +82,7 @@ func (p *DestinationAddresses) ReadFrom(r io.Reader) (n int64, err error) {
 func (p DestinationAddresses) WriteTo(w io.Writer) (n int64, err error) {
 	length := len(p.Addresses) + len(p.DistributionList)
 	if length > 0xFF {
-		err = ErrItemTooMany
+		err = ErrInvalidDestCount
 		return
 	}
 	var buf bytes.Buffer
@@ -110,7 +113,7 @@ func (p *UnsuccessfulRecords) ReadFrom(r io.Reader) (n int64, err error) {
 	buf := bufio.NewReader(r)
 	count, err := buf.ReadByte()
 	if err != nil {
-		err = ErrCannotRead
+		err = ErrInvalidCommandLength
 		return
 	}
 	items := UnsuccessfulRecords{}
@@ -121,7 +124,7 @@ func (p *UnsuccessfulRecords) ReadFrom(r io.Reader) (n int64, err error) {
 			err = binary.Read(buf, binary.BigEndian, &item.ErrorStatusCode)
 		}
 		if err != nil {
-			err = ErrCannotRead
+			err = ErrInvalidCommandLength
 			return
 		}
 		items = append(items, item)

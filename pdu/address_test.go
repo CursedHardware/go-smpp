@@ -67,6 +67,8 @@ func TestDestinationAddresses_ReadFrom(t *testing.T) {
 	var addresses DestinationAddresses
 	_, err := addresses.ReadFrom(bytes.NewReader([]byte{0xFF, 0x02}))
 	require.Error(t, err)
+	_, err = addresses.ReadFrom(bytes.NewReader([]byte{0xFF, 0x03}))
+	require.Error(t, err)
 	_, err = addresses.ReadFrom(bytes.NewReader(nil))
 	require.Error(t, err)
 	addresses.DistributionList = make([]string, 0x100)

@@ -16,7 +16,7 @@ func (t *Time) From(input string) (err error) {
 	}
 	parts, symbol := fromTimeString(input)
 	if !(symbol == '+' || symbol == '-') {
-		err = ErrTimeNotParsed
+		err = ErrUnparseableTime
 		return
 	}
 	t.Time = time.Date(
@@ -66,7 +66,7 @@ func (p *Duration) From(input string) (err error) {
 	}
 	parts, symbol := fromTimeString(input)
 	if symbol != 'R' {
-		err = ErrTimeNotParsed
+		err = ErrUnparseableTime
 		return
 	}
 	bases := []time.Duration{

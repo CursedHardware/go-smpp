@@ -43,7 +43,7 @@ func (t Tags) WriteTo(w io.Writer) (n int64, err error) {
 		keys = append(keys, tag)
 	}
 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	err = ErrDataTooLarge
+	err = ErrInvalidTagLength
 	for _, tag := range keys {
 		data := t[tag]
 		length := len(data)

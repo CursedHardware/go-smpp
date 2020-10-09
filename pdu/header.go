@@ -21,7 +21,7 @@ type Header struct {
 func readHeaderFrom(r io.Reader, header *Header) (err error) {
 	err = binary.Read(r, binary.BigEndian, header)
 	if err == nil && (header.CommandLength < 16 || header.CommandLength > 0x10000) {
-		err = ErrInvalidPDU
+		err = ErrInvalidCommandLength
 	}
 	return
 }

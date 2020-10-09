@@ -12,7 +12,7 @@ type UserDataHeader map[byte][]byte
 
 func (h UserDataHeader) Len() (length int) {
 	if h == nil {
-		return 0
+		return
 	}
 	length = 1
 	for _, data := range h {
