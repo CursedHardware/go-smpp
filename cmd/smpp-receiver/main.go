@@ -55,6 +55,9 @@ func fillAccount(account *Account) {
 	if account.Password == "" {
 		account.Password = configure.DefaultAccount.Password
 	}
+	if account.Extra == nil {
+		account.Extra = configure.DefaultAccount.Extra
+	}
 }
 
 //goland:noinspection GoUnhandledErrorResult
@@ -98,6 +101,7 @@ func connect(device Account, hook func(*Payload)) {
 			Target:      pdu[0].DestAddr.No,
 			Message:     strings.ReplaceAll(merged, "\x7f\x7f ", "\n"),
 			DeliverTime: time.Now(),
+			Extra:       device.Extra,
 		})
 	})
 	for {
