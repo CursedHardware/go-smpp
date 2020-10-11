@@ -9,5 +9,5 @@
 
 ## DBLTek GoIP Series
 
-1. System ID pattern
-<br>e.q: if set `goip` then every slot is `goip01` ... `goip48`
+1. System ID pattern<br/>e.q: if set `goip` then every slot is `goip01` ... `goip48`
+2. Only supports some Command IDs:<br>`bind_receiver`, `bind_transmitter`, `bind_transceiver`<br>`submit_sm`, `deliver_sm`<br>`enquire_link`, `unbind`
