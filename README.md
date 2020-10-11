@@ -52,7 +52,7 @@ Supported encodings:
 2. Handshake
 
    ```go
-   resp, err := conn.Submit(context.Background(), &pdu.BindTransmitter{
+   resp, err := conn.Submit(context.Background(), &pdu.BindTransceiver{
        SystemID:   "your system id",
        Password:   "your password",
        SystemType: "your system type",
@@ -61,7 +61,7 @@ Supported encodings:
    if err != nil {
        panic(err)
    }
-   r := resp.(*pdu.BindTransmitterResp)
+   r := resp.(*pdu.BindTransceiverResp)
    if r.Header.CommandStatus == 0 {
        // start keep-alive
        go conn.EnquireLink(time.Minute, time.Minute)

@@ -7,7 +7,7 @@ import (
 
 type Configuration struct {
 	Hook           string    `json:"hook"`
-	DefaultAccount Account   `json:"default_account,omitempty"`
+	DefaultAccount Account   `json:"default_account"`
 	Devices        []Account `json:"devices"`
 }
 
