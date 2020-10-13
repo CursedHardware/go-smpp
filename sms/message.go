@@ -3,7 +3,6 @@ package sms
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 )
 
@@ -14,7 +13,6 @@ func ParseMessage(r io.Reader, dir Direction) (packet interface{}, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Println(kind, failure)
 	switch {
 	case kind == MessageTypeDeliver:
 		packet = new(Deliver)

@@ -45,9 +45,6 @@ func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
 			}
 		case io.ReaderFrom:
 			_, err = field.ReadFrom(buf)
-		case **SCAddress:
-			*field = new(SCAddress)
-			_, err = (*field).ReadFrom(buf)
 		case *ValidityPeriod:
 			switch validityPeriodFormat {
 			case 0b10:

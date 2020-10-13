@@ -7,4 +7,5 @@
 - <https://github.com/gammu/gsm-docs>
 - <https://m2msupport.net/>
 - <https://smspdu.benjaminerhart.com/>
-- <https://android.googlesource.com/platform/frameworks/opt/telephony/+/refs/heads/master/src/java/android/telephony/gsm/SmsMessage.java>
+- <https://android.googlesource.com/platform/frameworks/opt/telephony/+/f1b97fc/src/java/com/android/internal/telephony/gsm/SmsMessage.java>
+- <https://android.googlesource.com/platform/frameworks/opt/telephony/+/refs/heads/master/src/java/com/android/internal/telephony/gsm>
