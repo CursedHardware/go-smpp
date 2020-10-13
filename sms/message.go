@@ -2,46 +2,56 @@ package sms
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"io"
 )
 
 //goland:noinspection SpellCheckingInspection
-func ParseMessage(r io.Reader, dir Direction) (smsc Address, packet interface{}, err error) {
+func ParseMessage(r io.Reader, dir Direction) (packet interface{}, err error) {
 	buf := bufio.NewReader(r)
-	if smsc, err = ReadSMSCAddress(buf); err != nil {
-		return
-	}
-	var t MessageType
-	var failure bool
-	peek, err := buf.Peek(2)
+	kind, failure, err := getType(buf, dir)
 	if err != nil {
 		return
-	} else {
-		t.Set(peek[0]&0b11, dir)
-		failure = peek[1] > 0b001111111
 	}
-	switch t {
-	case MessageTypeDeliver:
+	fmt.Println(kind, failure)
+	switch {
+	case kind == MessageTypeDeliver:
 		packet = new(Deliver)
-	case MessageTypeDeliverReport:
+	case kind == MessageTypeDeliverReport && failure:
+		packet = new(DeliverReportError)
+	case kind == MessageTypeDeliverReport:
 		packet = new(DeliverReport)
-		if failure {
-			packet = new(DeliverReportError)
-		}
-	case MessageTypeSubmit:
+	case kind == MessageTypeSubmit:
 		packet = new(Submit)
-	case MessageTypeSubmitReport:
+	case kind == MessageTypeSubmitReport && failure:
+		packet = new(SubmitReportError)
+	case kind == MessageTypeSubmitReport:
 		packet = new(SubmitReport)
-		if failure {
-			packet = new(SubmitReportError)
-		}
-	case MessageTypeStatusReport:
+	case kind == MessageTypeStatusReport:
 		packet = new(StatusReport)
-	case MessageTypeCommand:
+	case kind == MessageTypeCommand:
 		packet = new(Command)
 	default:
+		err = errors.New(kind.String())
 		return
 	}
 	_, err = unmarshal(buf, packet)
+	return
+}
+
+func getType(buf *bufio.Reader, dir Direction) (kind MessageType, failure bool, err error) {
+	peek, err := buf.Peek(1)
+	if err != nil {
+		return
+	}
+	start := int(peek[0])
+	peek, err = buf.Peek(start + 3)
+	if err != nil {
+		return
+	} else {
+		kind.Set(peek[start+1]&0b11, dir)
+		failure = peek[start+2] > 0b001111111
+	}
 	return
 }

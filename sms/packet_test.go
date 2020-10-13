@@ -23,7 +23,7 @@ var (
 func TestDeliver(t *testing.T) {
 	decoded, err := hex.DecodeString(pduDeliverUCS2WithAlphanumeric)
 	require.NoError(t, err)
-	_, deliver, err := ParseMessage(bytes.NewReader(decoded), MT)
+	deliver, err := ParseMessage(bytes.NewReader(decoded), MT)
 	require.NoError(t, err)
 	spew.Dump(deliver)
 }
