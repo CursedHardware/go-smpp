@@ -11,22 +11,30 @@ func ParseMessage(r io.Reader, dir Direction) (smsc Address, packet interface{},
 	if smsc, err = ReadSMSCAddress(buf); err != nil {
 		return
 	}
-	firstOctet, err := buf.ReadByte()
+	var t MessageType
+	var failure bool
+	peek, err := buf.Peek(2)
 	if err != nil {
 		return
+	} else {
+		t.Set(peek[0]&0b11, dir)
+		failure = peek[1] > 0b001111111
 	}
-	_ = buf.UnreadByte()
-	var t MessageType
-	t.Set(firstOctet&0b11, dir)
 	switch t {
 	case MessageTypeDeliver:
 		packet = new(Deliver)
 	case MessageTypeDeliverReport:
 		packet = new(DeliverReport)
+		if failure {
+			packet = new(DeliverReportError)
+		}
 	case MessageTypeSubmit:
 		packet = new(Submit)
 	case MessageTypeSubmitReport:
 		packet = new(SubmitReport)
+		if failure {
+			packet = new(SubmitReportError)
+		}
 	case MessageTypeStatusReport:
 		packet = new(StatusReport)
 	case MessageTypeCommand:

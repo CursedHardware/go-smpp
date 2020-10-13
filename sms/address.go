@@ -29,7 +29,7 @@ func (p *Address) ReadFrom(r io.Reader) (n int64, err error) {
 	length /= 2
 	var data []byte
 	if p.TON != 0b101 {
-		data = make([]byte, length+1)
+		data = make([]byte, unblocks(length, 2))
 		if _, err = buf.Read(data); err != nil {
 			return
 		}

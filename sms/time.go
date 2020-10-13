@@ -29,7 +29,7 @@ func (t *Time) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-func (t Time) WriteTo(w io.Writer) (n int64, err error) {
+func (t *Time) WriteTo(w io.Writer) (n int64, err error) {
 	_, offset := t.Time.Zone()
 	return semioctet.EncodeSemi(
 		w,
@@ -66,7 +66,7 @@ func (d *Duration) ReadFrom(r io.Reader) (n int64, err error) {
 	return
 }
 
-func (d Duration) WriteTo(w io.Writer) (n int64, err error) {
+func (d *Duration) WriteTo(w io.Writer) (n int64, err error) {
 	var period time.Duration
 	if minutes := d.Duration / time.Minute; minutes <= 5 {
 		period = 0

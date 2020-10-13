@@ -12,14 +12,34 @@ func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
 	if p.Kind() == reflect.Ptr {
 		p = p.Elem()
 	}
+	t := p.Type()
 	var validityPeriodFormat byte
+	var parameterIndicator *ParameterIndicator
 	for i := 0; i < p.NumField(); i++ {
-		switch field := (p.Field(i).Addr().Interface()).(type) {
+		abbr := t.Field(i).Tag.Get("TP")
+		if parameterIndicator != nil && !parameterIndicator.Has(abbr) {
+			continue
+		}
+		field := p.Field(i).Addr().Interface()
+		switch field := field.(type) {
 		case *byte:
 			*field, err = buf.ReadByte()
+		case io.ByteWriter:
+			var value byte
+			if value, err = buf.ReadByte(); err == nil {
+				err = field.WriteByte(value)
+			}
+			if setter, ok := field.(directionSetter); ok {
+				switch t.Field(i).Tag.Get("DIR") {
+				case "MT":
+					setter.setDirection(MT)
+				case "MO":
+					setter.setDirection(MO)
+				}
+			}
 		case *[]byte:
-			length, err := buf.ReadByte()
-			if err == nil {
+			var length byte
+			if length, err = buf.ReadByte(); err == nil {
 				*field = make([]byte, length)
 				_, err = buf.Read(*field)
 			}
@@ -28,24 +48,17 @@ func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
 		case *ValidityPeriod:
 			switch validityPeriodFormat {
 			case 0b10:
-				var duration Duration
-				if _, err = duration.ReadFrom(buf); err == nil {
-					*field = duration
-				}
+				*field = new(Duration)
 			case 0b11:
-				var time Time
-				if _, err = time.ReadFrom(buf); err == nil {
-					*field = time
-				}
+				*field = new(Time)
 			}
-		case *Flags, *SubmitFlags, *DeliverFlags:
-			var value byte
-			if value, err = buf.ReadByte(); err == nil {
-				unmarshalFlags(value, field)
-			}
-			if flags, ok := field.(*SubmitFlags); ok {
-				validityPeriodFormat = flags.ValidityPeriodFormat
-			}
+			_, err = (*field).(io.ReaderFrom).ReadFrom(buf)
+		}
+		switch field := field.(type) {
+		case *SubmitFlags:
+			validityPeriodFormat = field.ValidityPeriodFormat
+		case *ParameterIndicator:
+			parameterIndicator = field
 		}
 		n = int64(buf.Size())
 		if err != nil {
@@ -86,8 +99,8 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 	return buf.WriteTo(w)
 }
 
-func unmarshalFlags(c byte, packet interface{}) {
-	v := reflect.ValueOf(packet)
+func unmarshalFlags(c byte, flags interface{}) (err error) {
+	v := reflect.ValueOf(flags)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}

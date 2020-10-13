@@ -3,12 +3,12 @@ package sms
 type MessageType byte
 
 const (
-	MessageTypeDeliver MessageType = iota
-	MessageTypeDeliverReport
-	MessageTypeSubmitReport
-	MessageTypeSubmit
-	MessageTypeStatusReport
-	MessageTypeCommand
+	MessageTypeDeliver       MessageType = iota // 00 0 MT
+	MessageTypeDeliverReport                    // 00 1 MO
+	MessageTypeSubmitReport                     // 01 0 MT
+	MessageTypeSubmit                           // 01 1 MO
+	MessageTypeStatusReport                     // 10 0 MT
+	MessageTypeCommand                          // 10 1 MO
 )
 
 type Direction int
@@ -22,8 +22,8 @@ func (t *MessageType) Set(kind byte, dir Direction) {
 	*t = MessageType(kind<<1 | byte(dir))
 }
 
-func (t MessageType) Type() MessageType {
-	return t >> 1
+func (t MessageType) Type() byte {
+	return byte(t >> 1)
 }
 
 func (t MessageType) Direction() Direction {
