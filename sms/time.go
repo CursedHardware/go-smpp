@@ -1,6 +1,7 @@
 package sms
 
 import (
+	"bufio"
 	"bytes"
 	"io"
 	"time"
@@ -82,5 +83,59 @@ func (d *Duration) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	var buf bytes.Buffer
 	buf.WriteByte(byte(period))
+	return buf.WriteTo(w)
+}
+
+type EnhancedDuration struct {
+	time.Duration
+	Indicator byte
+}
+
+func (d *EnhancedDuration) ReadFrom(r io.Reader) (n int64, err error) {
+	buf := bufio.NewReader(r)
+	if d.Indicator, err = buf.ReadByte(); err != nil {
+		return
+	}
+	length := 6
+	switch d.Indicator & 0b111 {
+	case 0b001: // relative
+		var duration Duration
+		_, err = duration.ReadFrom(r)
+		d.Duration = duration.Duration
+		length--
+	case 0b010: // relative seconds
+		var second byte
+		if second, err = buf.ReadByte(); err == nil {
+			d.Duration = time.Second * time.Duration(second)
+		}
+		length--
+	case 0b011: // relative hh:mm:ss
+		data := make([]byte, 3)
+		_, err = buf.Read(data[:])
+		if err != nil {
+			return
+		}
+		data = semioctet.DecodeSemi(data[:])
+		d.Duration = time.Duration(data[0])*time.Hour +
+			time.Duration(data[1])*time.Minute +
+			time.Duration(data[2])*time.Second
+		length -= len(data)
+	}
+	_, err = buf.Discard(length)
+	return
+}
+
+func (d *EnhancedDuration) WriteTo(w io.Writer) (n int64, err error) {
+	var buf bytes.Buffer
+	buf.WriteByte(d.Indicator)
+	switch d.Indicator & 0b111 {
+	case 0b001: // relative
+		_, err = (&Duration{d.Duration}).WriteTo(&buf)
+	case 0b010: // relative seconds
+		buf.WriteByte(byte(d.Duration / time.Second))
+	case 0b011: // relative hh:mm:ss
+		hh, mm, ss := int(d.Hours()), int(d.Minutes()), int(d.Seconds())
+		_, err = semioctet.EncodeSemi(&buf, hh, mm-(hh*60), ss-(mm*60))
+	}
 	return buf.WriteTo(w)
 }

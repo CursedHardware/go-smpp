@@ -36,8 +36,9 @@ func EncodeSemi(w io.Writer, chunks ...int) (n int64, err error) {
 
 func DecodeSemi(encoded []byte) []byte {
 	chunks := make([]byte, 0, len(encoded)*2)
+	var half byte
 	for _, item := range encoded {
-		half := item >> 4
+		half = item >> 4
 		if half == 0b1111 {
 			return append(chunks, item&0b1111)
 		}

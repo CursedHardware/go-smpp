@@ -80,6 +80,10 @@ func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
 			_, err = field.ReadFrom(buf)
 		case *interface{}:
 			switch {
+			case abbr == "VP" && validityPeriodFormat == 0b01:
+				var duration EnhancedDuration
+				_, err = duration.ReadFrom(buf)
+				*field = duration
 			case abbr == "VP" && validityPeriodFormat == 0b10:
 				var duration Duration
 				_, err = duration.ReadFrom(buf)
@@ -116,6 +120,8 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 		switch field := p.Field(i).Addr().Interface().(type) {
 		case *interface{}:
 			switch (*field).(type) {
+			case EnhancedDuration:
+				validityPeriodFormat = 0b01
 			case Duration:
 				validityPeriodFormat = 0b10
 			case Time:
@@ -144,6 +150,8 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 			_, err = field.WriteTo(&buf)
 		case *interface{}:
 			switch field := (*field).(type) {
+			case EnhancedDuration:
+				_, err = field.WriteTo(&buf)
 			case Duration:
 				_, err = field.WriteTo(&buf)
 			case Time:
