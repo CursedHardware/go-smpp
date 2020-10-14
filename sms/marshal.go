@@ -166,22 +166,20 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 }
 
 func getType(buf *bufio.Reader) (kind MessageType, failure bool, err error) {
-	peek, err := buf.Peek(1)
-	if err != nil {
+	var peek []byte
+	if peek, err = buf.Peek(1); err != nil {
 		return
 	}
 	length := int(peek[0])
-	peek, err = buf.Peek(length + 3)
-	if err != nil {
+	if peek, err = buf.Peek(length + 3); err != nil {
 		return
-	} else {
-		var dir Direction
-		if length == 0 {
-			dir = MO
-		}
-		kind.Set(peek[length+1]&0b11, dir)
-		failure = peek[length+2] > 0b001111111
 	}
+	var dir Direction
+	if length == 0 {
+		dir = MO
+	}
+	kind.Set(peek[length+1]&0b11, dir)
+	failure = peek[length+2] > 0b001111111
 	return
 }
 

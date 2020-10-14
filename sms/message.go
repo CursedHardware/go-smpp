@@ -5,7 +5,7 @@ type Deliver struct {
 	SCAddress              SCAddress    `TP:"SC"`
 	Flags                  DeliverFlags `DIR:"MT"`
 	OriginatingAddress     Address      `TP:"OA"`
-	ProtocolIdentifier     byte         `TP:"PI"`
+	ProtocolIdentifier     byte         `TP:"PID"`
 	DataCoding             byte         `TP:"DCS"`
 	ServiceCentreTimestamp Time         `TP:"SCTS"`
 	UserData               []byte       `TP:"UD"`
@@ -33,7 +33,7 @@ type Submit struct {
 	Flags              SubmitFlags `DIR:"MO"`
 	MessageReference   byte        `TP:"MR"`
 	DestinationAddress Address     `TP:"DA"`
-	ProtocolIdentifier byte        `TP:"PI"`
+	ProtocolIdentifier byte        `TP:"PID"`
 	DataCoding         byte        `TP:"DCS"`
 	ValidityPeriod     interface{} `TP:"VP"`
 	UserData           []byte      `TP:"UD"`

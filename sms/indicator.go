@@ -35,6 +35,10 @@ func (p *ParameterIndicator) WriteByte(c byte) error {
 	return unmarshalFlags(c, p)
 }
 
+func (p *ParameterIndicator) ReadByte() (byte, error) {
+	return marshalFlags(p)
+}
+
 type Flags struct {
 	MessageType MessageType
 }
@@ -97,33 +101,33 @@ type FailureCause byte
 
 //goland:noinspection SpellCheckingInspection
 var failureCauseErrors = map[FailureCause]string{
-	0x80: "Telematic interworking not supported",
-	0x81: "Short message Type 0 not supported",
-	0x82: "Cannot replace short message",
-	0x8F: "Unspecified TP-PID error",
-	0x90: "Data coding schema (alphabet not supported)",
-	0x91: "Message class not supported",
-	0x9F: "Unspecified TP-DCS error",
-	0xA0: "Command cannot be actioned",
-	0xA1: "Command unsupported",
-	0xAF: "Unspecified TP-Command error",
-	0xB0: "TPDU not supported",
-	0xC0: "SC busy",
-	0xC1: "No SC subscription",
-	0xC2: "SC system failure",
-	0xC3: "Invalid SME address",
-	0xC4: "Destination SME barred",
-	0xC5: "SME Rejected-Duplicate",
-	0xD0: "SIM SMS storage full",
-	0xD1: "No SMS storage capability in SIM",
-	0xD2: "Error in MS",
-	0xD3: "Memory Capacity Exceeded",
-	0xFF: "Unspecified error cause",
+	0x00: "Telematic interworking not supported",
+	0x01: "Short message Type 0 not supported",
+	0x02: "Cannot replace short message",
+	0x0F: "Unspecified TP-PID error",
+	0x10: "Data coding schema (alphabet not supported)",
+	0x11: "Message class not supported",
+	0x1F: "Unspecified TP-DCS error",
+	0x20: "Command cannot be actioned",
+	0x21: "Command unsupported",
+	0x2F: "Unspecified TP-Command error",
+	0x30: "TPDU not supported",
+	0x40: "SC busy",
+	0x41: "No SC subscription",
+	0x42: "SC system failure",
+	0x43: "Invalid SME address",
+	0x44: "Destination SME barred",
+	0x45: "SME Rejected-Duplicate",
+	0x50: "SIM SMS storage full",
+	0x51: "No SMS storage capability in SIM",
+	0x52: "Error in MS",
+	0x53: "Memory Capacity Exceeded",
+	0x7F: "Unspecified error cause",
 }
 
 //goland:noinspection SpellCheckingInspection
 func (f FailureCause) Error() string {
-	if message, ok := failureCauseErrors[f]; ok {
+	if message, ok := failureCauseErrors[f-0x80]; ok {
 		return message
 	}
 	return fmt.Sprintf("%X", byte(f))

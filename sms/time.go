@@ -25,7 +25,7 @@ func (t *Time) ReadFrom(r io.Reader) (n int64, err error) {
 		int(blocks[4]),
 		int(blocks[5]),
 		0,
-		time.FixedZone("", int(blocks[6])*int(time.Hour/time.Second/4)),
+		time.FixedZone("", int(blocks[6])*900),
 	)
 	return
 }
@@ -40,7 +40,7 @@ func (t *Time) WriteTo(w io.Writer) (n int64, err error) {
 		t.Time.Hour(),
 		t.Time.Minute(),
 		t.Time.Second(),
-		offset/int(time.Hour/time.Second/4),
+		offset/900,
 	)
 }
 
@@ -53,10 +53,11 @@ func (d *Duration) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	switch n := time.Duration(data[0]); {
 	case n <= 143:
-		d.Duration = 1 + 5*time.Minute*n
+		n++
+		d.Duration = 5 * time.Minute * n
 	case n <= 167:
-		halfDays := 12 * time.Hour
-		halfHours := 30 * time.Minute
+		const halfDays = 12 * time.Hour
+		const halfHours = 30 * time.Minute
 		d.Duration = (n-143)*halfHours + halfDays
 	case n <= 196:
 		d.Duration = (n - 166) * 24 * time.Hour
@@ -73,7 +74,9 @@ func (d *Duration) WriteTo(w io.Writer) (n int64, err error) {
 	} else if hours := d.Duration / time.Hour; hours <= 12 {
 		period = minutes/5 - 1
 	} else if hours <= 24 {
-		period = (d.Duration-(hours*12))/(time.Minute*30) + 143
+		const halfDays = 12 * time.Hour
+		const halfHours = 30 * time.Minute
+		period = (d.Duration-halfDays)/halfHours + 143
 	} else if days := hours / 24; days <= 31 {
 		period = hours/24 + 166
 	} else if weeks := days / 7; weeks <= 62 {
@@ -100,28 +103,26 @@ func (d *EnhancedDuration) ReadFrom(r io.Reader) (n int64, err error) {
 	switch d.Indicator & 0b111 {
 	case 0b001: // relative
 		var duration Duration
-		_, err = duration.ReadFrom(r)
+		_, err = duration.ReadFrom(buf)
 		d.Duration = duration.Duration
 		length--
 	case 0b010: // relative seconds
 		var second byte
-		if second, err = buf.ReadByte(); err == nil {
-			d.Duration = time.Second * time.Duration(second)
-		}
+		second, err = buf.ReadByte()
+		d.Duration = time.Second * time.Duration(second)
 		length--
 	case 0b011: // relative hh:mm:ss
 		data := make([]byte, 3)
-		_, err = buf.Read(data[:])
-		if err != nil {
-			return
-		}
-		data = semioctet.DecodeSemi(data[:])
+		_, err = buf.Read(data)
+		data = semioctet.DecodeSemi(data)
 		d.Duration = time.Duration(data[0])*time.Hour +
 			time.Duration(data[1])*time.Minute +
 			time.Duration(data[2])*time.Second
 		length -= len(data)
 	}
-	_, err = buf.Discard(length)
+	if err == nil {
+		_, err = buf.Discard(length)
+	}
 	return
 }
 
@@ -137,5 +138,6 @@ func (d *EnhancedDuration) WriteTo(w io.Writer) (n int64, err error) {
 		hh, mm, ss := int(d.Hours()), int(d.Minutes()), int(d.Seconds())
 		_, err = semioctet.EncodeSemi(&buf, hh, mm-(hh*60), ss-(mm*60))
 	}
+	buf.Write(make([]byte, 7-buf.Len()))
 	return buf.WriteTo(w)
 }
