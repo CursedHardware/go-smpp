@@ -24,7 +24,7 @@ func (t *Time) ReadFrom(r io.Reader) (n int64, err error) {
 		int(blocks[4]),
 		int(blocks[5]),
 		0,
-		time.FixedZone("", int(blocks[6])*900),
+		time.FixedZone("", int(blocks[6])*int(time.Hour/time.Second/4)),
 	)
 	return
 }
@@ -39,8 +39,7 @@ func (t *Time) WriteTo(w io.Writer) (n int64, err error) {
 		t.Time.Hour(),
 		t.Time.Minute(),
 		t.Time.Second(),
-		0,
-		offset/900,
+		offset/int(time.Hour/time.Second/4),
 	)
 }
 
@@ -85,5 +84,3 @@ func (d *Duration) WriteTo(w io.Writer) (n int64, err error) {
 	buf.WriteByte(byte(period))
 	return buf.WriteTo(w)
 }
-
-type ValidityPeriod interface{}

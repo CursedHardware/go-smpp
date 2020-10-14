@@ -29,14 +29,14 @@ type DeliverReportError struct {
 
 // Submit see GSM 03.40, section 9.2.2.2 (39p)
 type Submit struct {
-	SCAddress          SCAddress      `TP:"SC"`
-	Flags              SubmitFlags    `DIR:"MO"`
-	MessageReference   byte           `TP:"MR"`
-	DestinationAddress Address        `TP:"DA"`
-	ProtocolIdentifier byte           `TP:"PI"`
-	DataCoding         byte           `TP:"DCS"`
-	ValidityPeriod     ValidityPeriod `TP:"VP"`
-	UserData           []byte         `TP:"UD"`
+	SCAddress          SCAddress   `TP:"SC"`
+	Flags              SubmitFlags `DIR:"MO"`
+	MessageReference   byte        `TP:"MR"`
+	DestinationAddress Address     `TP:"DA"`
+	ProtocolIdentifier byte        `TP:"PI"`
+	DataCoding         byte        `TP:"DCS"`
+	ValidityPeriod     interface{} `TP:"VP"`
+	UserData           []byte      `TP:"UD"`
 }
 
 // SubmitReport see GSM 03.40, section 9.2.2.2a (41p)

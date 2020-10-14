@@ -19,15 +19,15 @@ const (
 )
 
 func (t *MessageType) Set(kind byte, dir Direction) {
-	*t = MessageType(kind<<1 | byte(dir))
+	*t = MessageType(kind<<1|byte(dir)) & 0b111
 }
 
 func (t MessageType) Type() byte {
-	return byte(t >> 1)
+	return byte(t>>1) & 0b11
 }
 
 func (t MessageType) Direction() Direction {
-	return Direction(t & 0x01)
+	return Direction(t) & 0b1
 }
 
 func (t MessageType) String() string {
@@ -45,5 +45,5 @@ func (t MessageType) String() string {
 	case MessageTypeStatusReport:
 		return "SMS-STATUS-REPORT"
 	}
-	return "[UNKNOWN]"
+	return "UNKNOWN"
 }

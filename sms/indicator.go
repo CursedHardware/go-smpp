@@ -8,26 +8,27 @@ type ParameterIndicator struct {
 	UserData           bool
 }
 
-func (p ParameterIndicator) get(abbr string) *bool {
+func (p *ParameterIndicator) Has(abbr string) bool {
 	switch abbr {
 	case "PID":
-		return &p.ProtocolIdentifier
+		return p.ProtocolIdentifier
 	case "DCS":
-		return &p.DataCoding
+		return p.DataCoding
 	case "UD":
-		return &p.UserData
+		return p.UserData
 	}
-	return nil
-}
-
-func (p ParameterIndicator) Has(abbr string) bool {
-	v := p.get(abbr)
-	return v != nil && *v
+	return false
 }
 
 func (p *ParameterIndicator) Set(abbr string) {
-	v := p.get(abbr)
-	*v = true
+	switch abbr {
+	case "PID":
+		p.ProtocolIdentifier = true
+	case "DCS":
+		p.DataCoding = true
+	case "UD":
+		p.UserData = true
+	}
 }
 
 func (p *ParameterIndicator) WriteByte(c byte) error {
@@ -46,6 +47,10 @@ func (p *Flags) WriteByte(c byte) error {
 	return unmarshalFlags(c, p)
 }
 
+func (p *Flags) ReadByte() (byte, error) {
+	return marshalFlags(p)
+}
+
 type DeliverFlags struct {
 	MessageType            MessageType
 	MoreMessagesToSend     bool
@@ -60,6 +65,10 @@ func (p *DeliverFlags) setDirection(direction Direction) {
 
 func (p *DeliverFlags) WriteByte(c byte) error {
 	return unmarshalFlags(c, p)
+}
+
+func (p *DeliverFlags) ReadByte() (byte, error) {
+	return marshalFlags(p)
 }
 
 type SubmitFlags struct {
@@ -77,6 +86,10 @@ func (p *SubmitFlags) setDirection(direction Direction) {
 
 func (p *SubmitFlags) WriteByte(c byte) error {
 	return unmarshalFlags(c, p)
+}
+
+func (p *SubmitFlags) ReadByte() (byte, error) {
+	return marshalFlags(p)
 }
 
 // FailureCause see GSM 03.40, section 9.2.3.22 (54p)
