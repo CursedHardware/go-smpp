@@ -131,12 +131,12 @@ func (d *EnhancedDuration) WriteTo(w io.Writer) (n int64, err error) {
 	buf.WriteByte(d.Indicator)
 	switch d.Indicator & 0b111 {
 	case 0b001: // relative
-		_, err = (&Duration{d.Duration}).WriteTo(&buf)
+		_, _ = (&Duration{d.Duration}).WriteTo(&buf)
 	case 0b010: // relative seconds
 		buf.WriteByte(byte(d.Duration / time.Second))
 	case 0b011: // relative hh:mm:ss
 		hh, mm, ss := int(d.Hours()), int(d.Minutes()), int(d.Seconds())
-		_, err = semioctet.EncodeSemi(&buf, hh, mm-(hh*60), ss-(mm*60))
+		_, _ = semioctet.EncodeSemi(&buf, hh, mm-(hh*60), ss-(mm*60))
 	}
 	buf.Write(make([]byte, 7-buf.Len()))
 	return buf.WriteTo(w)
