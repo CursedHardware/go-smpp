@@ -13,27 +13,24 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.15
-      - name: Linter
-        uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.31
-      - name: Coverage
-        run: go test -v -race -cover ./...
-      - name: Build
-        run: |
-          set -x
-          mkdir -p build
-          GOOS=linux  go build -a -ldflags "-s -w" -o build/smpp-receiver-linux-amd64 ./cmd/smpp-receiver
-          GOOS=linux  go build -a -ldflags "-s -w" -o build/smpp-repl-linux-amd64     ./cmd/smpp-repl
-          GOOS=darwin go build -a -ldflags "-s -w" -o build/smpp-repl-darwin-amd64    ./cmd/smpp-repl
-          upx build/*
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+      - uses: golangci/golangci-lint-action@master
+      - run: go test -v -race -cover ./... -coverprofile=coverage.out
+      - run: GOOS=linux go build -o smpp-receiver-linux-amd64 ./cmd/smpp-receiver
       - uses: actions/upload-artifact@v2
         with:
-          name: build
-          path: build
+          path: smpp-receiver-linux-amd64
+      - run: GOOS=linux go build -o smpp-repl-linux-amd64 ./cmd/smpp-repl
+      - uses: actions/upload-artifact@v2
+        with:
+          path: smpp-repl-linux-amd64
+      - run: GOOS=linux go build -o smpp-repl-darwin-amd64 ./cmd/smpp-repl
+      - uses: actions/upload-artifact@v2
+        with:
+          path: smpp-repl-darwin-amd64
+      - uses: jandelgado/gcov2lcov-action@v1.0.5
+      - uses: coverallsapp/github-action@v1.0.1
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: coverage.lcov
