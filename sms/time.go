@@ -18,14 +18,14 @@ func (t *Time) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	blocks := semioctet.DecodeSemi(data)
 	t.Time = time.Date(
-		2000+int(blocks[0]),
+		2000+blocks[0],
 		time.Month(blocks[1]),
-		int(blocks[2]),
-		int(blocks[3]),
-		int(blocks[4]),
-		int(blocks[5]),
+		blocks[2],
+		blocks[3],
+		blocks[4],
+		blocks[5],
 		0,
-		time.FixedZone("", int(blocks[6])*900),
+		time.FixedZone("", blocks[6]*900),
 	)
 	return
 }
@@ -114,10 +114,10 @@ func (d *EnhancedDuration) ReadFrom(r io.Reader) (n int64, err error) {
 	case 0b011: // relative hh:mm:ss
 		data := make([]byte, 3)
 		_, err = buf.Read(data)
-		data = semioctet.DecodeSemi(data)
-		d.Duration = time.Duration(data[0])*time.Hour +
-			time.Duration(data[1])*time.Minute +
-			time.Duration(data[2])*time.Second
+		semi := semioctet.DecodeSemi(data)
+		d.Duration = time.Duration(semi[0])*time.Hour +
+			time.Duration(semi[1])*time.Minute +
+			time.Duration(semi[2])*time.Second
 		length -= len(data)
 	}
 	if err == nil {

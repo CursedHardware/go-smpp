@@ -7,55 +7,42 @@ import (
 )
 
 func EncodeSemi(w io.Writer, chunks ...int) (n int64, err error) {
-	digits := make([]byte, 0, len(chunks))
-	for _, c := range chunks {
-		var bucket []byte
-		if c < 10 {
-			digits = append(digits, 0)
-		}
-		for c > 0 {
-			d := c % 10
-			bucket = append(bucket, byte(d))
-			c = (c - d) / 10
-		}
-		for i := range bucket {
-			digits = append(digits, bucket[len(bucket)-1-i])
-		}
-	}
+	digits := toDigits(chunks)
 	var buf bytes.Buffer
-	buf.Grow(len(digits)/2 + 1)
-	for i := 0; i < len(digits); i += 2 {
-		if len(digits)-i < 2 {
-			buf.WriteByte(0b11110000 | digits[i])
-			return buf.WriteTo(w)
-		}
+	buf.Grow(len(digits) / 2)
+	i, remain := 0, len(digits)
+	for remain > 1 {
 		buf.WriteByte(digits[i+1]<<4 | digits[i])
+		i += 2
+		remain -= 2
+	}
+	if remain > 0 {
+		buf.WriteByte(0b11110000 | digits[i])
 	}
 	return buf.WriteTo(w)
 }
 
-func DecodeSemi(encoded []byte) []byte {
-	chunks := make([]byte, 0, len(encoded)*2)
+func DecodeSemi(encoded []byte) (chunks []int) {
 	var half byte
 	for _, item := range encoded {
 		half = item >> 4
 		if half == 0b1111 {
-			return append(chunks, item&0b1111)
+			return append(chunks, int(item&0b1111))
 		}
-		chunks = append(chunks, item&0b1111*10+half)
+		chunks = append(chunks, int(item&0b1111*10+half))
 	}
-	return chunks
+	return
 }
 
-func EncodeSemiAddress(w io.Writer, content string) (n int64, err error) {
-	phone, err := strconv.ParseUint(content, 10, 64)
+func EncodeSemiAddress(w io.Writer, input string) (n int64, err error) {
+	parsed, err := strconv.ParseUint(input, 10, 64)
 	if err != nil {
 		return
 	}
-	return EncodeSemi(w, int(phone))
+	return EncodeSemi(w, int(parsed))
 }
 
-func DecodeSemiAddress(encoded []byte) string {
+func DecodeSemiAddress(encoded []byte) (output string) {
 	var buf bytes.Buffer
 	var half byte
 	for _, item := range encoded {
@@ -66,4 +53,16 @@ func DecodeSemiAddress(encoded []byte) string {
 		}
 	}
 	return buf.String()
+}
+
+func toDigits(chunks []int) (digits []byte) {
+	for _, chunk := range chunks {
+		if chunk < 10 {
+			digits = append(digits, 0)
+		}
+		for _, r := range strconv.Itoa(chunk) {
+			digits = append(digits, byte(r-'0'))
+		}
+	}
+	return
 }
