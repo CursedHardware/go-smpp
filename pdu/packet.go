@@ -1,6 +1,6 @@
 package pdu
 
-import . "github.com/NiceLabs/go-smpp/coding"
+import . "github.com/VoiceGateway/go-smpp/coding"
 
 type Responsable interface {
 	Resp() interface{}

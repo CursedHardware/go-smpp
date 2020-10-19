@@ -1,4 +1,4 @@
-module github.com/NiceLabs/go-smpp
+module github.com/VoiceGateway/go-smpp
 
 go 1.13
 

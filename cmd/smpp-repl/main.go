@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/NiceLabs/go-smpp"
+	"github.com/VoiceGateway/go-smpp"
 	"github.com/abiosoft/ishell"
 )
 

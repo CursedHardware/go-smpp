@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	. "github.com/NiceLabs/go-smpp/coding"
+	. "github.com/VoiceGateway/go-smpp/coding"
 	"github.com/stretchr/testify/require"
 )
 

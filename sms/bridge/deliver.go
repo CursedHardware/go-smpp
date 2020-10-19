@@ -3,8 +3,8 @@ package bridge
 import (
 	"bytes"
 
-	"github.com/NiceLabs/go-smpp/pdu"
-	"github.com/NiceLabs/go-smpp/sms"
+	"github.com/VoiceGateway/go-smpp/pdu"
+	"github.com/VoiceGateway/go-smpp/sms"
 )
 
 func ToDeliverSM(deliver *sms.Deliver) (sm *pdu.DeliverSM, err error) {

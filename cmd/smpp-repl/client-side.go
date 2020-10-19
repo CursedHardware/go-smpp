@@ -9,9 +9,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/NiceLabs/go-smpp"
-	"github.com/NiceLabs/go-smpp/coding"
-	"github.com/NiceLabs/go-smpp/pdu"
+	"github.com/VoiceGateway/go-smpp"
+	"github.com/VoiceGateway/go-smpp/coding"
+	"github.com/VoiceGateway/go-smpp/pdu"
 	"github.com/abiosoft/ishell"
 	"github.com/davecgh/go-spew/spew"
 )

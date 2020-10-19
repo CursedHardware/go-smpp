@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/NiceLabs/go-smpp"
-	"github.com/NiceLabs/go-smpp/pdu"
+	"github.com/VoiceGateway/go-smpp"
+	"github.com/VoiceGateway/go-smpp/pdu"
 )
 
 var configure Configuration
