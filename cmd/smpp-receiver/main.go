@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,16 +17,15 @@ import (
 	"github.com/NiceLabs/go-smpp/pdu"
 )
 
-var configure = new(Configuration)
+var configure Configuration
 var mutex sync.Mutex
 
 func init() {
-	configFile, err := ioutil.ReadFile("configure.json")
-	if err != nil {
+	var confPath string
+	flag.StringVar(&confPath, "conf", "configure.json", "configure file-path")
+	if data, err := ioutil.ReadFile(confPath); err != nil {
 		log.Fatal(err)
-	}
-	err = json.Unmarshal(configFile, configure)
-	if err != nil {
+	} else if err = json.Unmarshal(data, &configure); err != nil {
 		log.Fatal(err)
 	}
 }
