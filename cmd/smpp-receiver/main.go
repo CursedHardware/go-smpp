@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
@@ -99,7 +98,7 @@ func connect(device Account, hook func(*Payload)) {
 			SystemType:  device.SystemType,
 			Source:      pdu[0].SourceAddr.No,
 			Target:      pdu[0].DestAddr.No,
-			Message:     strings.ReplaceAll(merged, "\x7f\x7f ", "\n"),
+			Message:     merged,
 			DeliverTime: time.Now(),
 			Extra:       device.Extra,
 		})
