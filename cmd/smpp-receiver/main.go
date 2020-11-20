@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,6 +21,7 @@ var configure Configuration
 var mutex sync.Mutex
 
 func init() {
+	configure.HookMode = "event"
 	var confPath string
 	flag.StringVar(&confPath, "conf", "configure.json", "configure file-path")
 	if data, err := ioutil.ReadFile(confPath); err != nil {
@@ -30,11 +32,15 @@ func init() {
 }
 
 func main() {
+	hook := runProgram
+	if configure.HookMode == "ndjson" {
+		hook = runProgramWithEvent()
+	}
 	for _, device := range configure.Devices {
 		fillAccount(&device)
 		go func(device Account) {
 			for {
-				connect(device, runProgram)
+				connect(device, hook)
 			}
 		}(device)
 	}
@@ -128,12 +134,27 @@ func runProgram(message *Payload) {
 			log.Fatal(err)
 		}
 		defer stdin.Close()
-		err = json.NewEncoder(stdin).Encode(message)
-		if err != nil {
-			log.Fatal(err)
-		}
+		_ = json.NewEncoder(stdin).Encode(message)
 	}(cmd.StdinPipe())
 	if output, err := cmd.CombinedOutput(); err != nil {
 		log.Fatal(message, err, "\n", string(output))
+	}
+}
+
+func runProgramWithEvent() func(*Payload) {
+	cmd := exec.Command(configure.Hook)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		panic(err)
+	}
+	go func() {
+		if output, err := cmd.CombinedOutput(); err != nil {
+			log.Fatal(err, "\n", string(output))
+		}
+	}()
+	return func(message *Payload) {
+		log.Printf("%s @ %s | %s -> %s", message.SMSC, message.SystemID, message.Source, message.Target)
+		_ = json.NewEncoder(stdin).Encode(message)
+		_, _ = fmt.Fprintln(stdin)
 	}
 }
