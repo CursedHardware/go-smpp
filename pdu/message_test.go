@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/VoiceGateway/go-smpp/coding"
+	"github.com/M2MGateway/go-smpp/coding"
 	"github.com/stretchr/testify/require"
 )
 

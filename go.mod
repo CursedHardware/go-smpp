@@ -1,4 +1,4 @@
-module github.com/VoiceGateway/go-smpp
+module github.com/M2MGateway/go-smpp
 
 go 1.13
 

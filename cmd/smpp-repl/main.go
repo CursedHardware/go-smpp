@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/VoiceGateway/go-smpp"
+	"github.com/M2MGateway/go-smpp"
 	"github.com/abiosoft/ishell"
 )
 

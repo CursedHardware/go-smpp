@@ -3,7 +3,7 @@ package coding
 import (
 	. "unicode"
 
-	"github.com/VoiceGateway/go-smpp/coding/gsm7bit"
+	"github.com/M2MGateway/go-smpp/coding/gsm7bit"
 )
 
 func BestCoding(input string) DataCoding {

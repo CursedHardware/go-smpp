@@ -32,5 +32,5 @@ jobs:
       - uses: jandelgado/gcov2lcov-action@v1.0.5
       - uses: coverallsapp/github-action@v1.0.1
         with:
-          github-token: ${{ secrets.github_token }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: coverage.lcov

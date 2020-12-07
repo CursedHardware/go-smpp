@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	. "github.com/VoiceGateway/go-smpp/pdu"
+	. "github.com/M2MGateway/go-smpp/pdu"
 )
 
 type Conn struct {
