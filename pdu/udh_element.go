@@ -21,11 +21,9 @@ func (h ConcatenatedHeader) Len() int {
 func (h ConcatenatedHeader) Set(udh UserDataHeader) {
 	var buf bytes.Buffer
 	_ = binary.Write(&buf, binary.BigEndian, h)
-	id := byte(0x08)
-	data := buf.Bytes()
-	if h.Reference < 0xFF {
-		id = 0x00
-		data = data[1:4]
+	if data := buf.Bytes(); data[0] == 0 {
+		udh[0x00] = data[1:4]
+	} else {
+		udh[0x08] = data
 	}
-	udh[id] = data
 }

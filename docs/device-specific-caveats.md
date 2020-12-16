@@ -2,7 +2,7 @@
 
 ## Synway SMG4000 Series
 
-- `enquire_link` need to be invoked every 5 seconds.
+- `enquire_link` need to be invoked every 0.5 seconds.
 - Firmware versions before 09/25/2020, `deliver_sm` - `dest_addr` field returns garbage.
 - The use of `bind_receiver` and `bind_transmitter` is not supported.
 - Only **SMPP v3.4** is implemented.

@@ -2,23 +2,54 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
+
+	"github.com/M2MGateway/go-smpp/pdu"
 )
 
 type Configuration struct {
-	Hook           string    `json:"hook"`
-	HookMode       string    `json:"hook_mode"`
-	DefaultAccount Account   `json:"default_account"`
-	Devices        []Account `json:"devices"`
+	Hook     string    `json:"hook"`
+	HookMode string    `json:"hook_mode"`
+	Devices  []*Device `json:"devices"`
 }
 
 //goland:noinspection ALL
-type Account struct {
-	SMSC       string          `json:"smsc"`
-	SystemID   string          `json:"system_id"`
-	Password   string          `json:"password"`
-	SystemType string          `json:"system_type"`
-	Extra      json.RawMessage `json:"extra"`
+type Device struct {
+	SMSC             string               `json:"smsc"`
+	SystemID         string               `json:"system_id"`
+	Password         string               `json:"password"`
+	SystemType       string               `json:"system_type"`
+	Version          pdu.InterfaceVersion `json:"version"`
+	BindMode         string               `json:"bind_mode"`
+	Extra            json.RawMessage      `json:"extra"`
+	Workaround       string               `json:"workaround"`
+	KeepAliveTick    time.Duration        `json:"keepalive_tick"`
+	KeepAliveTimeout time.Duration        `json:"keepalive_timeout"`
+}
+
+func (d *Device) String() string {
+	return fmt.Sprintf("%s@%s", d.SMSC, d.SystemID)
+}
+
+func (d *Device) Binder() pdu.Responsable {
+	switch d.BindMode {
+	case "receiver":
+		return &pdu.BindReceiver{
+			SystemID:   d.SystemID,
+			Password:   d.Password,
+			SystemType: d.SystemType,
+			Version:    d.Version,
+		}
+	case "transceiver":
+		return &pdu.BindTransceiver{
+			SystemID:   d.SystemID,
+			Password:   d.Password,
+			SystemType: d.SystemType,
+			Version:    d.Version,
+		}
+	}
+	return nil
 }
 
 //goland:noinspection ALL

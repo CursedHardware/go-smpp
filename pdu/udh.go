@@ -77,20 +77,17 @@ func (h UserDataHeader) WriteTo(w io.Writer) (n int64, err error) {
 }
 
 func (h UserDataHeader) ConcatenatedHeader() *ConcatenatedHeader {
-	for id, data := range h {
-		switch id {
-		case 0x00:
-			return &ConcatenatedHeader{
-				Reference:  uint16(data[0]),
-				TotalParts: data[1],
-				Sequence:   data[2],
-			}
-		case 0x08:
-			return &ConcatenatedHeader{
-				Reference:  binary.BigEndian.Uint16(data[0:2]),
-				TotalParts: data[2],
-				Sequence:   data[3],
-			}
+	if data, ok := h[0x00]; ok {
+		return &ConcatenatedHeader{
+			Reference:  uint16(data[0]),
+			TotalParts: data[1],
+			Sequence:   data[2],
+		}
+	} else if data, ok = h[0x08]; ok {
+		return &ConcatenatedHeader{
+			Reference:  binary.BigEndian.Uint16(data[0:2]),
+			TotalParts: data[2],
+			Sequence:   data[3],
 		}
 	}
 	return nil

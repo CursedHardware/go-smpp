@@ -9,12 +9,12 @@ Write to `configure.json` file:
 ```json
 {
   "hook": "./send-email.py",
-  "default_account": {
-    "smsc": "target ip:target port",
-    "password": "your password"
-  },
   "devices": [
-    { "system_id": "tenant-1" },
+    {
+      "smsc": "target ip:target port",
+      "password": "your password",
+      "system_id": "tenant-1"
+    },
     { "system_id": "tenant-2" }
   ]
 }
@@ -25,6 +25,7 @@ Sample hook script:
 ```python
 #!/usr/bin/env python3
 import json
+
 import requests
 
 payload = json.load(sys.stdin)
@@ -57,4 +58,22 @@ requests.post(
     auth=("api", "your api token"),
     data=data,
 )
+```
+
+Sample systemd service file:
+
+```ini
+[Unit]
+Description=SMPP Receiver
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/smpp-receiver
+ExecStart=/opt/smpp-receiver/smpp-receiver-linux-arm
+Restart=on-failure
+RestartSec=1m
+Environment="TZ=Asia/Shanghai"
+
+[Install]
+WantedBy=multi-user.target
 ```

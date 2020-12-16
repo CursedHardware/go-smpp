@@ -21,6 +21,14 @@ type Conn struct {
 	WriteTimeout time.Duration
 }
 
+func OpenConn(ctx context.Context, smsc string) (conn *Conn, err error) {
+	parent, err := net.Dial("tcp", smsc)
+	if err == nil {
+		conn = NewConn(ctx, parent)
+	}
+	return
+}
+
 func NewConn(ctx context.Context, parent net.Conn) *Conn {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Conn{
@@ -52,7 +60,9 @@ func (c *Conn) Watch() {
 		if packet, err = ReadPDU(c.parent); err == io.EOF {
 			return
 		} else if status, ok := err.(CommandStatus); err != nil {
-			if !ok {
+			if packet == nil {
+				return
+			} else if !ok {
 				status = ErrUnknownError
 			}
 			sequence := ReadSequence(packet)
@@ -110,7 +120,7 @@ func (c *Conn) EnquireLink(tick time.Duration, timeout time.Duration) {
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 	sendEnquireLink := func() {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(c.ctx, timeout)
 		defer cancel()
 		if _, err := c.Submit(ctx, new(EnquireLink)); err != nil {
 			ticker.Stop()
@@ -124,7 +134,7 @@ func (c *Conn) EnquireLink(tick time.Duration, timeout time.Duration) {
 }
 
 func (c *Conn) Close() (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(c.ctx, time.Second)
 	defer cancel()
 	defer c.cancel()
 	if _, err = c.Submit(ctx, new(Unbind)); err == nil {
@@ -132,6 +142,10 @@ func (c *Conn) Close() (err error) {
 		err = c.parent.Close()
 	}
 	return
+}
+
+func (c *Conn) Done() <-chan struct{} {
+	return c.ctx.Done()
 }
 
 func (c *Conn) PDU() <-chan interface{} {

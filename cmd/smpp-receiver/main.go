@@ -2,159 +2,169 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
-	"net"
+	"os"
 	"os/exec"
 	"sync"
 	"time"
 
 	"github.com/M2MGateway/go-smpp"
 	"github.com/M2MGateway/go-smpp/pdu"
+	"github.com/imdario/mergo"
+	. "github.com/xeipuuv/gojsonschema"
 )
 
 var configure Configuration
 var mutex sync.Mutex
 
 func init() {
-	configure.HookMode = "event"
+	//go:embed schema.json
+	var schemaFile []byte
+
 	var confPath string
-	flag.StringVar(&confPath, "conf", "configure.json", "configure file-path")
+	flag.StringVar(&confPath, "c", "configure.json", "configure file-path")
+
 	if data, err := ioutil.ReadFile(confPath); err != nil {
-		log.Fatal(err)
-	} else if err = json.Unmarshal(data, &configure); err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
+	} else if result, _ := Validate(NewBytesLoader(schemaFile), NewBytesLoader(data)); !result.Valid() {
+		for _, desc := range result.Errors() {
+			log.Println(desc)
+		}
+		log.Fatalln("invalid configuration")
+	} else {
+		_ = json.Unmarshal(data, &configure)
+	}
+	_ = mergo.Merge(configure.Devices[0], &Device{
+		Version:          pdu.SMPPVersion34,
+		BindMode:         "receiver",
+		KeepAliveTick:    time.Millisecond * 500,
+		KeepAliveTimeout: time.Second,
+	})
+	for i := 1; i < len(configure.Devices); i++ {
+		_ = mergo.Merge(configure.Devices[i], configure.Devices[i-1])
 	}
 }
 
 func main() {
-	hook := runProgram
+	hook := runProgramWithEvent
 	if configure.HookMode == "ndjson" {
-		hook = runProgramWithEvent()
+		hook = runProgramWithStream()
 	}
 	for _, device := range configure.Devices {
-		fillAccount(&device)
-		go func(device Account) {
-			for {
-				connect(device, hook)
-			}
-		}(device)
+		go connect(device, hook)
 	}
 	select {}
 }
 
-func fillAccount(account *Account) {
-	if account.SMSC == "" {
-		account.SMSC = configure.DefaultAccount.SMSC
+//goland:noinspection GoUnhandledErrorResult
+func connect(device *Device, hook func(*Payload)) {
+	conn, err := smpp.OpenConn(context.Background(), device.SMSC)
+	if err != nil {
+		log.Fatalln(err)
 	}
-	if account.SystemID == "" {
-		account.SystemID = configure.DefaultAccount.SystemID
+	conn.ReadTimeout = time.Second
+	conn.WriteTimeout = time.Second
+	go conn.Watch()
+	defer conn.Close()
+	if resp, err := conn.Submit(context.Background(), device.Binder()); err != nil {
+		log.Fatalln(device, err)
+	} else if status := pdu.ReadCommandStatus(resp); status != 0 {
+		log.Fatalln(device, status)
+	} else {
+		log.Println(device, "Connected")
+		go conn.EnquireLink(device.KeepAliveTick, device.KeepAliveTimeout)
 	}
-	if account.SystemType == "" {
-		account.SystemType = configure.DefaultAccount.SystemType
-	}
-	if account.Password == "" {
-		account.Password = configure.DefaultAccount.Password
-	}
-	if account.Extra == nil {
-		account.Extra = configure.DefaultAccount.Extra
+	addDeliverSM := makeCombineMultipartDeliverSM(device, hook)
+	for {
+		select {
+		case <-conn.Done():
+			log.Println(device, "Disconnected")
+			time.Sleep(time.Second)
+			go connect(device, hook)
+			return
+		case packet := <-conn.PDU():
+			switch p := packet.(type) {
+			case *pdu.DeliverSM:
+				addDeliverSM(p)
+				_ = conn.Send(p.Resp())
+			case pdu.Responsable:
+				_ = conn.Send(p.Resp())
+			}
+		}
 	}
 }
 
 //goland:noinspection GoUnhandledErrorResult
-func connect(device Account, hook func(*Payload)) {
-	parent, err := net.Dial("tcp", device.SMSC)
+func runProgramWithEvent(message *Payload) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, configure.Hook)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if stdin, err := cmd.StdinPipe(); err != nil {
+		log.Fatalln(err)
+	} else {
+		go func() {
+			defer stdin.Close()
+			_ = json.NewEncoder(stdin).Encode(message)
+		}()
+	}
+	if err := cmd.Run(); err != nil {
+		log.Fatalln(err)
+	}
+}
+
+//goland:noinspection GoUnhandledErrorResult
+func runProgramWithStream() func(*Payload) {
+	cmd := exec.Command(configure.Hook)
+	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	ctx := context.Background()
-	conn := smpp.NewConn(ctx, parent)
-	conn.ReadTimeout = time.Second * 30
-	go conn.Watch()
-	defer conn.Close()
-	resp, err := conn.Submit(ctx, &pdu.BindTransceiver{
-		SystemID:   device.SystemID,
-		Password:   device.Password,
-		SystemType: device.SystemType,
-		Version:    pdu.SMPPVersion34,
-	})
-	if err != nil {
-		log.Fatalln(err)
-	} else if status := pdu.ReadCommandStatus(resp); status != 0 {
-		log.Fatalln(status)
-	}
-	log.Printf("Connected %s @ %s", device.SMSC, device.SystemID)
-	go conn.EnquireLink(time.Second*5, time.Minute)
-	addDeliverSM := pdu.CombineMultipartDeliverSM(func(pdu []*pdu.DeliverSM) {
-		var merged string
-		for _, sm := range pdu {
-			message, err := sm.Message.Parse()
-			if err != nil {
-				continue
-			}
-			merged += message
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	go func() {
+		if err = cmd.Run(); err != nil {
+			log.Fatalln(err)
 		}
-		hook(&Payload{
+	}()
+	return func(message *Payload) {
+		mutex.Lock()
+		defer mutex.Unlock()
+		_ = json.NewEncoder(stdin).Encode(message)
+		_, _ = fmt.Fprintln(stdin)
+	}
+}
+
+func makeCombineMultipartDeliverSM(device *Device, hook func(*Payload)) func(*pdu.DeliverSM) {
+	return pdu.CombineMultipartDeliverSM(func(delivers []*pdu.DeliverSM) {
+		var mergedMessage string
+		for _, sm := range delivers {
+			if sm.Message.DataCoding == 0x00 && device.Workaround == "SMG4000" {
+				mergedMessage += string(sm.Message.Message)
+			} else if message, err := sm.Message.Parse(); err == nil {
+				mergedMessage += message
+			}
+		}
+		source := delivers[0].SourceAddr
+		target := delivers[0].DestAddr
+		log.Println(device, source, "->", target)
+		go hook(&Payload{
 			SMSC:        device.SMSC,
 			SystemID:    device.SystemID,
 			SystemType:  device.SystemType,
-			Source:      pdu[0].SourceAddr.No,
-			Target:      pdu[0].DestAddr.No,
-			Message:     merged,
+			Source:      source.String(),
+			Target:      target.String(),
+			Message:     mergedMessage,
 			DeliverTime: time.Now(),
 			Extra:       device.Extra,
 		})
 	})
-	for {
-		packet := <-conn.PDU()
-		switch p := packet.(type) {
-		case *pdu.DeliverSM:
-			addDeliverSM(p)
-			_ = conn.Send(p.Resp())
-		case pdu.Responsable:
-			_ = conn.Send(p.Resp())
-		}
-	}
-}
-
-//goland:noinspection GoUnhandledErrorResult
-func runProgram(message *Payload) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	log.Printf("%s @ %s | %s -> %s", message.SMSC, message.SystemID, message.Source, message.Target)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, configure.Hook)
-	go func(stdin io.WriteCloser, err error) {
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer stdin.Close()
-		_ = json.NewEncoder(stdin).Encode(message)
-	}(cmd.StdinPipe())
-	if output, err := cmd.CombinedOutput(); err != nil {
-		log.Fatal(message, err, "\n", string(output))
-	}
-}
-
-func runProgramWithEvent() func(*Payload) {
-	cmd := exec.Command(configure.Hook)
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		panic(err)
-	}
-	go func() {
-		if output, err := cmd.CombinedOutput(); err != nil {
-			log.Fatal(err, "\n", string(output))
-		}
-	}()
-	return func(message *Payload) {
-		log.Printf("%s @ %s | %s -> %s", message.SMSC, message.SystemID, message.Source, message.Target)
-		_ = json.NewEncoder(stdin).Encode(message)
-		_, _ = fmt.Fprintln(stdin)
-	}
 }
