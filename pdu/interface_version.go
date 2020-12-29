@@ -17,7 +17,7 @@ const (
 func (v InterfaceVersion) String() string {
 	major := (v >> 4) & 0b1111
 	minor := v & 0b1111
-	return fmt.Sprintf("v%d.%d", major, minor)
+	return fmt.Sprintf("%d.%d", major, minor)
 }
 
 func (v InterfaceVersion) MarshalJSON() (data []byte, err error) {
@@ -30,7 +30,7 @@ func (v *InterfaceVersion) UnmarshalJSON(data []byte) (err error) {
 	if err = json.Unmarshal(data, &value); err != nil {
 		return
 	}
-	if _, err = fmt.Sscanf(value, "v%d.%d", &major, &minor); err != nil {
+	if _, err = fmt.Sscanf(value, "%d.%d", &major, &minor); err != nil {
 		return
 	}
 	*v = ((major & 0b1111) << 4) | (minor & 0b1111)
