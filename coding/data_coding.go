@@ -2,6 +2,7 @@ package coding
 
 import (
 	"fmt"
+	. "unicode"
 
 	"github.com/M2MGateway/go-smpp/coding/gsm7bit"
 	. "golang.org/x/text/encoding"
@@ -9,6 +10,7 @@ import (
 	"golang.org/x/text/encoding/japanese"
 	"golang.org/x/text/encoding/korean"
 	"golang.org/x/text/encoding/unicode"
+	"golang.org/x/text/unicode/rangetable"
 )
 
 // DataCoding see SMPP v5, section 4.7.7 (123p)
@@ -70,6 +72,18 @@ func (c DataCoding) Splitter() Splitter {
 	return splitterMap[c]
 }
 
+func (c DataCoding) Validate(input string) bool {
+	if c == UCS2Coding {
+		return true
+	}
+	for _, r := range input {
+		if !Is(alphabetMap[c], r) {
+			return false
+		}
+	}
+	return true
+}
+
 const (
 	GSM7BitCoding   DataCoding = 0b00000000 // GSM 7Bit
 	ASCIICoding     DataCoding = 0b00000001 // ASCII
@@ -95,6 +109,16 @@ var encodingMap = map[DataCoding]Encoding{
 	ISO2022JPCoding: japanese.ISO2022JP,
 	EUCJPCoding:     japanese.EUCJP,
 	EUCKRCoding:     korean.EUCKR,
+}
+
+var alphabetMap = map[DataCoding]*RangeTable{
+	GSM7BitCoding:  gsm7bit.DefaultAlphabet,
+	ASCIICoding:    _ASCII,
+	Latin1Coding:   rangetable.Merge(_ASCII, Latin),
+	CyrillicCoding: rangetable.Merge(_ASCII, Cyrillic),
+	HebrewCoding:   rangetable.Merge(_ASCII, Hebrew),
+	ShiftJISCoding: rangetable.Merge(_ASCII, _Shift_JIS_Definition),
+	EUCKRCoding:    rangetable.Merge(_ASCII, _EUC_KR_Definition),
 }
 
 var splitterMap = map[DataCoding]Splitter{

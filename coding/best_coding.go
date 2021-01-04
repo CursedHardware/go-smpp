@@ -1,36 +1,22 @@
 package coding
 
-import (
-	. "unicode"
-
-	"github.com/M2MGateway/go-smpp/coding/gsm7bit"
-)
-
 func BestCoding(input string) DataCoding {
-	switch {
-	case isRangeTable(input, gsm7bit.DefaultAlphabet):
-		return GSM7BitCoding
-	case isRangeTable(input, _ASCII):
-		return ASCIICoding
-	case isRangeTable(input, _Latin1):
-		return Latin1Coding
-	case isRangeTable(input, _Cyrillic):
-		return CyrillicCoding
-	case isRangeTable(input, _Hebrew):
-		return HebrewCoding
-	case isRangeTable(input, _Shift_JIS):
-		return ShiftJISCoding
-	case isRangeTable(input, _EUC_KR):
-		return EUCKRCoding
+	codings := []DataCoding{
+		GSM7BitCoding, ASCIICoding, Latin1Coding,
+		CyrillicCoding, HebrewCoding, ShiftJISCoding,
+		EUCKRCoding,
+	}
+	for _, coding := range codings {
+		if coding.Validate(input) {
+			return coding
+		}
 	}
 	return UCS2Coding
 }
 
-func isRangeTable(input string, table *RangeTable) bool {
-	for _, r := range input {
-		if !Is(table, r) {
-			return false
-		}
+func BestSafeCoding(input string) DataCoding {
+	if GSM7BitCoding.Validate(input) {
+		return GSM7BitCoding
 	}
-	return true
+	return UCS2Coding
 }
