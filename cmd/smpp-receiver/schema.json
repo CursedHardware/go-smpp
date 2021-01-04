@@ -65,6 +65,12 @@
             "SMG4000"
           ]
         },
+        "owner": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
         "extra": {
           "type": [
             "string",

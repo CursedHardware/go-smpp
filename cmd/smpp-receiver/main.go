@@ -160,11 +160,13 @@ func makeCombineMultipartDeliverSM(device *Device, hook func(*Payload)) func(*pd
 			SMSC:        device.SMSC,
 			SystemID:    device.SystemID,
 			SystemType:  device.SystemType,
+			Owner:       device.Owner,
+			Phone:       device.Phone,
+			Extra:       device.Extra,
 			Source:      source.String(),
 			Target:      target.String(),
 			Message:     mergedMessage,
 			DeliverTime: time.Now(),
-			Extra:       device.Extra,
 		})
 	})
 }
