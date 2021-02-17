@@ -22,10 +22,10 @@ import (
 var configure Configuration
 var mutex sync.Mutex
 
-func init() {
-	//go:embed schema.json
-	var schemaFile []byte
+//go:embed schema.json
+var schemaFile []byte
 
+func init() {
 	var confPath string
 	flag.StringVar(&confPath, "c", "configure.json", "configure file-path")
 

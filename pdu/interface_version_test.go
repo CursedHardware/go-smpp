@@ -9,9 +9,9 @@ import (
 
 func TestInterfaceVersion(t *testing.T) {
 	samples := map[InterfaceVersion][]byte{
-		SMPPVersion33: []byte(`"v3.3"`),
-		SMPPVersion34: []byte(`"v3.4"`),
-		SMPPVersion50: []byte(`"v5.0"`),
+		SMPPVersion33: []byte(`"3.3"`),
+		SMPPVersion34: []byte(`"3.4"`),
+		SMPPVersion50: []byte(`"5.0"`),
 	}
 	var err error
 	var version InterfaceVersion

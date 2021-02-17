@@ -1,6 +1,6 @@
 module github.com/M2MGateway/go-smpp
 
-go 1.13
+go 1.16
 
 require (
 	github.com/abiosoft/ishell v2.0.0+incompatible
