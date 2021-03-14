@@ -44,8 +44,8 @@ Supported encodings:
    if err != nil {
        panic(err)
    }
-   session.WriteTimeout = n * time.Second // set write timeout (optional, default 15 minutes)
-   session.ReadTimeout =  n * time.Second // set read timeout  (optional, default 15 minutes)
+   session.WriteTimeout = n * time.Second // set write timeout (optional, default 1 sec)
+   session.ReadTimeout =  n * time.Second // set read timeout  (optional, default 1 sec)
    ```
 
 2. Handshake

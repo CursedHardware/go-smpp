@@ -76,10 +76,9 @@ func onConnectToServer(c *ishell.Context) {
 		fmt.Println("Error:", err.Error())
 		return
 	}
-	conn = smpp.NewSession(context.Background(), parent)
+	conn = smpp.NewSession(parent)
 	conn.WriteTimeout = time.Minute
 	conn.ReadTimeout = time.Minute
-	go conn.Watch()
 	go onWatchInboundMessages(conn)
 	defer onAddClientCommands()
 	fmt.Printf("Connect %q successfully\n", address)

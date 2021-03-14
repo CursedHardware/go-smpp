@@ -14,13 +14,15 @@ func ReadPDU(r io.Reader) (pdu Packet, err error) {
 	if err != nil {
 		return
 	}
-	n, err := r.Read(make([]byte, header.CommandLength-16))
-	switch {
-	case err == io.EOF:
-		return
-	case n != int(header.CommandLength-16):
-		err = ErrInvalidCommandLength
-		return
+	if header.CommandLength > 16 {
+		var n int
+		n, err = r.Read(make([]byte, header.CommandLength-16))
+		if err != nil {
+			return
+		} else if n != int(header.CommandLength-16) {
+			err = ErrInvalidCommandLength
+			return
+		}
 	}
 	t, ok := types[header.CommandID]
 	if !ok {

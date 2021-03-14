@@ -40,8 +40,8 @@ func NewSession(parent net.Conn) (conn *Session) {
 		receiveQueue: make(chan Packet),
 		pending:      make(map[int32]func(Packet)),
 		NextSequence: rand.Int31,
-		ReadTimeout:  time.Minute * 15,
-		WriteTimeout: time.Minute * 15,
+		ReadTimeout:  time.Second,
+		WriteTimeout: time.Second,
 	}
 	go conn.watch()
 	return
@@ -88,7 +88,7 @@ func (s *Session) Submit(ctx context.Context, packet Responsable) (resp Packet, 
 	if err = s.Send(packet); err != nil {
 		return
 	}
-	returns := make(chan interface{}, 1)
+	returns := make(chan Packet, 1)
 	s.pending[sequence] = func(resp Packet) { returns <- resp }
 	defer delete(s.pending, sequence)
 	select {

@@ -5,11 +5,8 @@ import (
 	_ "embed"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
-	"os/exec"
 	"sync"
 	"time"
 
@@ -91,76 +88,4 @@ func connect(device *Device, hook func(*Payload)) {
 	log.Println(device, "Disconnected")
 	time.Sleep(time.Second)
 	go connect(device, hook)
-}
-
-//goland:noinspection GoUnhandledErrorResult
-func runProgramWithEvent(message *Payload) {
-	mutex.Lock()
-	defer mutex.Unlock()
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*15)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, configure.Hook)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if stdin, err := cmd.StdinPipe(); err != nil {
-		log.Fatalln(err)
-	} else {
-		go func() {
-			defer stdin.Close()
-			_ = json.NewEncoder(stdin).Encode(message)
-		}()
-	}
-	if err := cmd.Run(); err != nil {
-		log.Fatalln(err)
-	}
-}
-
-//goland:noinspection GoUnhandledErrorResult
-func runProgramWithStream() func(*Payload) {
-	cmd := exec.Command(configure.Hook)
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		log.Fatalln(err)
-	}
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	go func() {
-		if err = cmd.Run(); err != nil {
-			log.Fatalln(err)
-		}
-	}()
-	return func(message *Payload) {
-		mutex.Lock()
-		defer mutex.Unlock()
-		_ = json.NewEncoder(stdin).Encode(message)
-		_, _ = fmt.Fprintln(stdin)
-	}
-}
-
-func makeCombineMultipartDeliverSM(device *Device, hook func(*Payload)) func(*pdu.DeliverSM) {
-	return pdu.CombineMultipartDeliverSM(func(delivers []*pdu.DeliverSM) {
-		var mergedMessage string
-		for _, sm := range delivers {
-			if sm.Message.DataCoding == 0x00 && device.Workaround == "SMG4000" {
-				mergedMessage += string(sm.Message.Message)
-			} else if message, err := sm.Message.Parse(); err == nil {
-				mergedMessage += message
-			}
-		}
-		source := delivers[0].SourceAddr
-		target := delivers[0].DestAddr
-		log.Println(device, source, "->", target)
-		go hook(&Payload{
-			SMSC:        device.SMSC,
-			SystemID:    device.SystemID,
-			SystemType:  device.SystemType,
-			Owner:       device.Owner,
-			Phone:       device.Phone,
-			Extra:       device.Extra,
-			Source:      source.String(),
-			Target:      target.String(),
-			Message:     mergedMessage,
-			DeliverTime: time.Now(),
-		})
-	})
 }
