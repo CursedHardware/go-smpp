@@ -42,9 +42,7 @@ func TestHeader(t *testing.T) {
 }
 
 func TestSequence(t *testing.T) {
-	ReadSequence(new(struct{}))
 	ReadSequence(&DeliverSM{})
-	_ = ReadCommandStatus(new(struct{}))
 	_ = ReadCommandStatus(&DeliverSM{})
 	WriteSequence(&DeliverSM{}, 0)
 }

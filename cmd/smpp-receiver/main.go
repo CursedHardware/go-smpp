@@ -63,13 +63,12 @@ func main() {
 
 //goland:noinspection GoUnhandledErrorResult
 func connect(device *Device, hook func(*Payload)) {
-	conn, err := smpp.OpenConn(context.Background(), device.SMSC)
+	conn, err := smpp.DialTimeout(device.SMSC, time.Second)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	conn.ReadTimeout = time.Second
 	conn.WriteTimeout = time.Second
-	go conn.Watch()
 	defer conn.Close()
 	if resp, err := conn.Submit(context.Background(), device.Binder()); err != nil {
 		log.Fatalln(device, err)
@@ -80,23 +79,18 @@ func connect(device *Device, hook func(*Payload)) {
 		go conn.EnquireLink(device.KeepAliveTick, device.KeepAliveTimeout)
 	}
 	addDeliverSM := makeCombineMultipartDeliverSM(device, hook)
-	for {
-		select {
-		case <-conn.Done():
-			log.Println(device, "Disconnected")
-			time.Sleep(time.Second)
-			go connect(device, hook)
-			return
-		case packet := <-conn.PDU():
-			switch p := packet.(type) {
-			case *pdu.DeliverSM:
-				addDeliverSM(p)
-				_ = conn.Send(p.Resp())
-			case pdu.Responsable:
-				_ = conn.Send(p.Resp())
-			}
+	for packet := range conn.PDU() {
+		switch p := packet.(type) {
+		case *pdu.DeliverSM:
+			addDeliverSM(p)
+			_ = conn.Send(p.Resp())
+		case pdu.Responsable:
+			_ = conn.Send(p.Resp())
 		}
 	}
+	log.Println(device, "Disconnected")
+	time.Sleep(time.Second)
+	go connect(device, hook)
 }
 
 //goland:noinspection GoUnhandledErrorResult

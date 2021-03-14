@@ -76,7 +76,7 @@ func onConnectToServer(c *ishell.Context) {
 		fmt.Println("Error:", err.Error())
 		return
 	}
-	conn = smpp.NewConn(context.Background(), parent)
+	conn = smpp.NewSession(context.Background(), parent)
 	conn.WriteTimeout = time.Minute
 	conn.ReadTimeout = time.Minute
 	go conn.Watch()
@@ -223,7 +223,7 @@ func onSendQueryCommandToServer(c *ishell.Context) {
 	spew.Dump(resp)
 }
 
-func onWatchInboundMessages(conn *smpp.Conn) {
+func onWatchInboundMessages(conn *smpp.Session) {
 	var err error
 	for {
 		packet := <-conn.PDU()

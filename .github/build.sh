@@ -12,6 +12,7 @@ function build() {
     local GOARCH="${platform[1]}"
     env GOOS="$GOOS" GOARCH="$GOARCH" \
       go build \
+      -trimpath \
       -ldflags '-s -w' \
       -o "dist/$NAME-$GOOS-$GOARCH" \
       "./cmd/$NAME"

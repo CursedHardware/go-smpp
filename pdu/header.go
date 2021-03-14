@@ -18,6 +18,10 @@ type Header struct {
 	Sequence      int32
 }
 
+func (h *Header) getCommandStatus() CommandStatus { return h.CommandStatus }
+func (h *Header) getSequence() int32              { return h.Sequence }
+func (h *Header) setSequence(sequence int32)      { h.Sequence = sequence }
+
 func readHeaderFrom(r io.Reader, header *Header) (err error) {
 	err = binary.Read(r, binary.BigEndian, header)
 	if err == nil && (header.CommandLength < 16 || header.CommandLength > 0x10000) {

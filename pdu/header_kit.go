@@ -1,39 +1,19 @@
 package pdu
 
-import (
-	"reflect"
-)
-
-func ReadSequence(packet interface{}) int32 {
-	if h := getHeader(packet); h != nil {
-		return h.Sequence
+func ReadSequence(packet Packet) int32 {
+	if packet == nil {
+		return -1
 	}
-	return 0
+	return packet.getSequence()
 }
 
-func WriteSequence(packet interface{}, sequence int32) {
-	if h := getHeader(packet); h != nil {
-		h.Sequence = sequence
-	}
+func WriteSequence(packet Packet, sequence int32) {
+	packet.setSequence(sequence)
 }
 
-func ReadCommandStatus(packet interface{}) CommandStatus {
-	if h := getHeader(packet); h != nil {
-		return h.CommandStatus
+func ReadCommandStatus(packet Packet) CommandStatus {
+	if packet == nil {
+		return 0
 	}
-	return 0
-}
-
-func getHeader(packet interface{}) *Header {
-	p := reflect.ValueOf(packet)
-	if p.Kind() == reflect.Ptr {
-		p = p.Elem()
-	}
-	for i := 0; i < p.NumField(); i++ {
-		field := p.Field(i)
-		if h, ok := field.Addr().Interface().(*Header); ok {
-			return h
-		}
-	}
-	return nil
+	return packet.getCommandStatus()
 }

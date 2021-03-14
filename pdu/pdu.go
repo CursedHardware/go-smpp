@@ -6,21 +6,28 @@ import (
 	"reflect"
 )
 
-func ReadPDU(r io.Reader) (pdu interface{}, err error) {
+func ReadPDU(r io.Reader) (pdu Packet, err error) {
 	var buf bytes.Buffer
 	r = io.TeeReader(r, &buf)
 	header := new(Header)
-	if err = readHeaderFrom(r, header); err != nil {
+	err = readHeaderFrom(r, header)
+	if err != nil {
 		return
 	}
-	if _, err = r.Read(make([]byte, header.CommandLength-16)); err != nil {
+	n, err := r.Read(make([]byte, header.CommandLength-16))
+	switch {
+	case err == io.EOF:
+		return
+	case n != int(header.CommandLength-16):
 		err = ErrInvalidCommandLength
+		return
 	}
-	if t, ok := types[header.CommandID]; !ok {
+	t, ok := types[header.CommandID]
+	if !ok {
 		err = ErrInvalidCommandID
-	} else {
-		pdu = reflect.New(t).Interface()
-		_, err = unmarshal(&buf, pdu)
+		return
 	}
+	pdu = reflect.New(t).Interface().(Packet)
+	_, err = unmarshal(&buf, pdu)
 	return
 }

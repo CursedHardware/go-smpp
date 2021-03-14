@@ -22,37 +22,36 @@ Supported encodings:
 
 ## Caveats
 
-- Please read [the SMPP Specification Version 5](docs/SMPP_v5.pdf) first. [pdu](pdu) is not limited to any value range.
-- If you do not like the default [conn.go](conn.go) implementation, you can easily replace it.
+- Please read [the SMPP Specification Version 5](docs/SMPP_v5.pdf) first.
+  [pdu](pdu) is not limited to any value range.
+- If you do not like the default [session.go](session.go) implementation, you can easily replace it.
 - [Device-specific Caveats](docs/device-specific-caveats.md)
 
 ## Command line tools
 
 1. [smpp-receiver](cmd/smpp-receiver)
-<br>SMPP Simple Receiver tool
+   <br>SMPP Simple Receiver tool
 
 2. [smpp-repl](cmd/smpp-repl)
-<br>SMPP Simple Test tool
+   <br>SMPP Simple Test tool
 
 ## Example
 
 1. Connect to the Remote (SMPP server)
 
    ```go
-   parent, err := net.Dial("tcp", "m2m-device:2775")
+   session, err = smpp.Dial(context.Background(), "m2m-device:2775")
    if err != nil {
        panic(err)
    }
-   conn = smpp.NewConn(context.Background(), parent)
-   conn.WriteTimeout = n * time.Second // set write timeout (optional, default 15 minutes)
-   conn.ReadTimeout =  n * time.Second // set read timeout  (optional, default 15 minutes)
-   go conn.Watch()                     // start watchdog
+   session.WriteTimeout = n * time.Second // set write timeout (optional, default 15 minutes)
+   session.ReadTimeout =  n * time.Second // set read timeout  (optional, default 15 minutes)
    ```
 
 2. Handshake
 
    ```go
-   resp, err := conn.Submit(context.Background(), &pdu.BindTransceiver{
+   resp, err := session.Submit(context.Background(), &pdu.BindTransceiver{
        SystemID:   "your system id",
        Password:   "your password",
        SystemType: "your system type",
@@ -64,7 +63,7 @@ Supported encodings:
    r := resp.(*pdu.BindTransceiverResp)
    if r.Header.CommandStatus == 0 {
        // start keep-alive
-       go conn.EnquireLink(time.Minute, time.Minute)
+       go session.EnquireLink(time.Minute, time.Minute)
    }
    ```
 
@@ -79,7 +78,7 @@ Supported encodings:
    if err != nil {
        panic(err)
    }
-   resp, err := conn.Submit(context.Background(), packet)
+   resp, err := session.Submit(context.Background(), packet)
    if err != nil {
        panic(err)
    }
@@ -89,11 +88,10 @@ Supported encodings:
 4. Event loop for receiving messages
 
    ```go
-   for {
-       packet := <-conn.PDU()
+   for packet := range session.PDU() {
        // reply a responsable packet
        if p, ok := packet.(pdu.Responsable); ok {
-           err := conn.Send(p.Resp())
+           err := session.Send(p.Resp())
            if err != nil {
                fmt.Println(err)
            }
@@ -105,4 +103,7 @@ Supported encodings:
 
 This piece of software is released under [the MIT license](LICENSE).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
