@@ -60,8 +60,7 @@ func (p *EnquireLink) Resp() Packet {
 
 func (p *QueryBroadcastSM) Resp() Packet {
 	return &QueryBroadcastSMResp{
-		Header: p.makeHeader(),
-
+		Header:    p.makeHeader(),
 		MessageID: p.MessageID,
 	}
 }
