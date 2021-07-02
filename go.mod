@@ -15,5 +15,5 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/text v0.3.5
+	golang.org/x/text v0.3.6
 )
