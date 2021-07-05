@@ -70,7 +70,7 @@ func (p *BindTransmitter) Resp() interface{} {
 	return &BindTransmitterResp{Header: Header{Sequence: p.Header.Sequence}, SystemID: p.SystemID}
 }
 
-// BindTransmitter see SMPP v5, section 4.1.1.2 (57p)
+// BindTransmitterResp see SMPP v5, section 4.1.1.2 (57p)
 type BindTransmitterResp struct {
 	Header   Header `id:"80000002"`
 	SystemID string
@@ -134,7 +134,7 @@ func (p *CancelSM) Resp() interface{} {
 	return &CancelSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
-// CancelSM see SMPP v5, section 4.5.1.2 (101p)
+// CancelSMResp see SMPP v5, section 4.5.1.2 (101p)
 type CancelSMResp struct {
 	Header Header `id:"80000008"`
 }
@@ -155,7 +155,7 @@ func (p *DataSM) Resp() interface{} {
 	return &DataSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
-// DataSM see SMPP v5, section 4.2.2.2 (70p)
+// DataSMResp see SMPP v5, section 4.2.2.2 (70p)
 type DataSMResp struct {
 	Header    Header `id:"80000103"`
 	MessageID string
@@ -200,7 +200,7 @@ func (p *EnquireLink) Resp() interface{} {
 	return &EnquireLinkResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
-// EnquireLink see SMPP v5, section 4.1.2.2 (63p)
+// EnquireLinkResp see SMPP v5, section 4.1.2.2 (63p)
 type EnquireLinkResp struct {
 	Header Header `id:"80000015"`
 }
@@ -299,7 +299,7 @@ func (p *SubmitMulti) Resp() interface{} {
 	return &SubmitMultiResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
-// SubmitMulti see SMPP v5, section 4.2.3.2 (74p)
+// SubmitMultiResp see SMPP v5, section 4.2.3.2 (74p)
 type SubmitMultiResp struct {
 	Header           Header `id:"80000021"`
 	MessageID        string
