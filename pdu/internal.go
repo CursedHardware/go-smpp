@@ -17,3 +17,10 @@ func writeCString(buf *bytes.Buffer, value string) {
 	buf.WriteString(value)
 	buf.WriteByte(0)
 }
+
+func getBool(v bool) byte {
+	if v {
+		return 1
+	}
+	return 0
+}

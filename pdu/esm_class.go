@@ -4,19 +4,17 @@ import "fmt"
 
 // ESMClass see SMPP v5, section 4.7.12 (125p)
 type ESMClass struct {
-	MessageMode, MessageType byte
-	UDHIndicator, ReplyPath  bool
+	MessageMode  byte // __ ____ **
+	MessageType  byte // __ **** __
+	UDHIndicator bool // _* ____ __
+	ReplyPath    bool // *_ ____ __
 }
 
 func (e ESMClass) ReadByte() (c byte, err error) {
 	c |= e.MessageMode & 0b11
 	c |= e.MessageType & 0b1111 << 2
-	if e.UDHIndicator {
-		c |= 1 << 6
-	}
-	if e.ReplyPath {
-		c |= 1 << 7
-	}
+	c |= getBool(e.UDHIndicator) << 6
+	c |= getBool(e.ReplyPath) << 7
 	return
 }
 

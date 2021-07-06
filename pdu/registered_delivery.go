@@ -4,18 +4,16 @@ import "fmt"
 
 // RegisteredDelivery see SMPP v5, section 4.7.21 (130p)
 type RegisteredDelivery struct {
-	MCDeliveryReceipt           byte
-	SMEOriginatedAcknowledgment byte
-	IntermediateNotification    bool
-	Reserved                    byte
+	MCDeliveryReceipt           byte // ___ _ __ **
+	SMEOriginatedAcknowledgment byte // ___ _ ** __
+	IntermediateNotification    bool // ___ * __ __
+	Reserved                    byte // *** _ __ __
 }
 
 func (r RegisteredDelivery) ReadByte() (c byte, err error) {
 	c |= r.MCDeliveryReceipt & 0b11
 	c |= r.SMEOriginatedAcknowledgment & 0b11 << 2
-	if r.IntermediateNotification {
-		c |= 1 << 4
-	}
+	c |= getBool(r.IntermediateNotification) << 4
 	c |= r.Reserved & 0b111 << 5
 	return
 }
