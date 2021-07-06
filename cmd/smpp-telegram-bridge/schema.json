@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "hook": {
+      "type": "string"
+    },
+    "hook_mode": {
+      "enum": [
+        "event",
+        "ndjson"
+      ]
+    },
+    "allowed_user_ids": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "uniqueItems": true
+    },
+    "devices": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/device"
+      },
+      "minItems": 1
+    }
+  },
+  "definitions": {
+    "device": {
+      "type": "object",
+      "properties": {
+        "smsc": {
+          "type": "string"
+        },
+        "system_id": {
+          "type": "string",
+          "maxLength": 16
+        },
+        "password": {
+          "type": "string",
+          "maxLength": 9
+        },
+        "system_type": {
+          "type": "string",
+          "maxLength": 13
+        },
+        "version": {
+          "enum": [
+            "3.3",
+            "3.4",
+            "5.0"
+          ]
+        },
+        "bind_mode": {
+          "enum": [
+            "transceiver",
+            "receiver"
+          ]
+        },
+        "keepalive_tick": {
+          "type": "string"
+        },
+        "keepalive_timeout": {
+          "type": "string"
+        },
+        "workaround": {
+          "enum": [
+            "SMG4000"
+          ]
+        },
+        "owner": {
+          "type": "number"
+        },
+        "extra": {
+          "type": [
+            "string",
+            "object",
+            "array"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "hook",
+    "hook_mode",
+    "devices"
+  ]
+}

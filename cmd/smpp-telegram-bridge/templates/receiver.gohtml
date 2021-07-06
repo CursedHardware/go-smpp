@@ -1,0 +1,7 @@
+☎️ <code>{{ .Sender }}</code>
+📞 <code>{{ .Receiver }}</code>
+📅 <code>{{ .ReceivedAt }}</code>
+
+{{ .Content }}
+
+{{ range .Tags }}#{{ . }} {{ end }}
