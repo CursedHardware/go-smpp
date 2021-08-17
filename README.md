@@ -6,19 +6,13 @@ A complete implementation of SMPP v5 protocol, written in golang.
 
 - Message encoding auto-detection
 - Multipart SMS automatic splitting and concatenating
+- Supported encodings:
 
-Supported encodings:
-
-- GSM 7Bit
-- ASCII
-- Latin-1
-- Cyrillic
-- Hebrew
-- Shift-JIS
-- ISO-2022-JP
-- EUC-JP
-- EUC-KR
-- UCS-2
+  ```plain
+  UCS-2     GSM 7bit  ASCII      Latin-1
+  Cyrillic  Hebrew    Shift-JIS  ISO-2022-JP
+  EUC-JP    EUC-KR
+  ```
 
 ## Caveats
 
@@ -28,11 +22,11 @@ Supported encodings:
 
 ## Command line tools
 
-1. [smpp-receiver](cmd/smpp-receiver)
-<br>SMPP Simple Receiver tool
+1. [smpp-receiver](cmd/smpp-receiver)\
+   SMPP Simple Receiver tool
 
-2. [smpp-repl](cmd/smpp-repl)
-<br>SMPP Simple Test tool
+2. [smpp-repl](cmd/smpp-repl)\
+   SMPP Simple Test tool
 
 ## Example
 
@@ -105,4 +99,9 @@ Supported encodings:
 
 This piece of software is released under [the MIT license](LICENSE).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
