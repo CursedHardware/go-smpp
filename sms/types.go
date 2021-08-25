@@ -4,7 +4,7 @@ type directionSetter interface {
 	setDirection(Direction)
 }
 
-type SMPPMarshaler interface {
+type SMPPMarshaller interface {
 	MarshalSMPP() (interface{}, error)
 }
 
