@@ -63,7 +63,9 @@ func (p *ShortMessage) Prepare(pdu interface{}) {
 	if _, ok := pdu.(*ReplaceSM); ok {
 		p.DataCoding = NoCoding
 	} else if p.UDHeader == nil {
-		v := reflect.ValueOf(pdu).Elem().FieldByName(_ESMClass)
+		t := reflect.ValueOf(pdu).Elem()
+		target := reflect.TypeOf(ESMClass{})
+		v := t.FieldByNameFunc(func(name string) bool { return t.FieldByName(name).Type() == target })
 		if v.IsValid() && v.Interface().(ESMClass).UDHIndicator {
 			p.UDHeader = UserDataHeader{}
 		}
