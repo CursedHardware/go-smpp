@@ -8,7 +8,7 @@ type Responsable interface {
 
 // AlertNotification see SMPP v5, section 4.1.3.1 (64p)
 type AlertNotification struct {
-	Header     Header `id:"00000102"`
+	Header     Header
 	SourceAddr Address
 	ESMEAddr   Address
 	Tags       Tags
@@ -16,7 +16,7 @@ type AlertNotification struct {
 
 // BindReceiver see SMPP v5, section 4.1.1.3 (58p)
 type BindReceiver struct {
-	Header       Header `id:"00000001"`
+	Header       Header
 	SystemID     string
 	Password     string
 	SystemType   string
@@ -30,14 +30,14 @@ func (p *BindReceiver) Resp() interface{} {
 
 // BindReceiverResp see SMPP v5, section 4.1.1.4 (59p)
 type BindReceiverResp struct {
-	Header   Header `id:"80000001"`
+	Header   Header
 	SystemID string
 	Tags     Tags
 }
 
 // BindTransceiver see SMPP v5, section 4.1.1.5 (59p)
 type BindTransceiver struct {
-	Header       Header `id:"00000009"`
+	Header       Header
 	SystemID     string
 	Password     string
 	SystemType   string
@@ -51,14 +51,14 @@ func (p *BindTransceiver) Resp() interface{} {
 
 // BindTransceiverResp see SMPP v5, section 4.1.1.6 (60p)
 type BindTransceiverResp struct {
-	Header   Header `id:"80000009"`
+	Header   Header
 	SystemID string
 	Tags     Tags
 }
 
 // BindTransmitter see SMPP v5, section 4.1.1.1 (56p)
 type BindTransmitter struct {
-	Header       Header `id:"00000002"`
+	Header       Header
 	SystemID     string
 	Password     string
 	SystemType   string
@@ -72,14 +72,14 @@ func (p *BindTransmitter) Resp() interface{} {
 
 // BindTransmitterResp see SMPP v5, section 4.1.1.2 (57p)
 type BindTransmitterResp struct {
-	Header   Header `id:"80000002"`
+	Header   Header
 	SystemID string
 	Tags     Tags
 }
 
 // BroadcastSM see SMPP v5, section 4.4.1.1 (92p)
 type BroadcastSM struct {
-	Header               Header `id:"00000112"`
+	Header               Header
 	ServiceType          string
 	SourceAddr           Address
 	MessageID            string
@@ -98,14 +98,14 @@ func (p *BroadcastSM) Resp() interface{} {
 
 // BroadcastSMResp see SMPP v5, section 4.4.1.2 (96p)
 type BroadcastSMResp struct {
-	Header    Header `id:"80000112"`
+	Header    Header
 	MessageID string
 	Tags      Tags
 }
 
 // CancelBroadcastSM see SMPP v5, section 4.6.2.1 (110p)
 type CancelBroadcastSM struct {
-	Header      Header `id:"00000113"`
+	Header      Header
 	ServiceType string
 	MessageID   string
 	SourceAddr  Address
@@ -118,12 +118,12 @@ func (p *CancelBroadcastSM) Resp() interface{} {
 
 // CancelBroadcastSMResp see SMPP v5, section 4.6.2.3 (112p)
 type CancelBroadcastSMResp struct {
-	Header Header `id:"80000113"`
+	Header Header
 }
 
 // CancelSM see SMPP v5, section 4.5.1.1 (100p)
 type CancelSM struct {
-	Header      Header `id:"00000008"`
+	Header      Header
 	ServiceType string
 	MessageID   string
 	SourceAddr  Address
@@ -136,12 +136,12 @@ func (p *CancelSM) Resp() interface{} {
 
 // CancelSMResp see SMPP v5, section 4.5.1.2 (101p)
 type CancelSMResp struct {
-	Header Header `id:"80000008"`
+	Header Header
 }
 
 // DataSM see SMPP v5, section 4.2.2.1 (69p)
 type DataSM struct {
-	Header             Header `id:"00000103"`
+	Header             Header
 	ServiceType        string
 	SourceAddr         Address
 	DestAddr           Address
@@ -157,14 +157,14 @@ func (p *DataSM) Resp() interface{} {
 
 // DataSMResp see SMPP v5, section 4.2.2.2 (70p)
 type DataSMResp struct {
-	Header    Header `id:"80000103"`
+	Header    Header
 	MessageID string
 	Tags      Tags
 }
 
 // DeliverSM see SMPP v5, section 4.3.1.1 (85p)
 type DeliverSM struct {
-	Header               Header `id:"00000005"`
+	Header               Header
 	ServiceType          string
 	SourceAddr           Address
 	DestAddr             Address
@@ -185,14 +185,14 @@ func (p *DeliverSM) Resp() interface{} {
 
 // DeliverSMResp see SMPP v5, section 4.3.1.1 (87p)
 type DeliverSMResp struct {
-	Header    Header `id:"80000005"`
+	Header    Header
 	MessageID string
 	Tags      Tags
 }
 
 // EnquireLink see SMPP v5, section 4.1.2.1 (63p)
 type EnquireLink struct {
-	Header Header `id:"00000015"`
+	Header Header
 	Tags   Tags
 }
 
@@ -202,25 +202,25 @@ func (p *EnquireLink) Resp() interface{} {
 
 // EnquireLinkResp see SMPP v5, section 4.1.2.2 (63p)
 type EnquireLinkResp struct {
-	Header Header `id:"80000015"`
+	Header Header
 }
 
 // GenericNACK see SMPP v5, section 4.1.4.1 (65p)
 type GenericNACK struct {
-	Header Header `id:"80000000"`
+	Header Header
 	Tags   Tags
 }
 
 // Outbind see SMPP v5, section 4.1.1.7 (61p)
 type Outbind struct {
-	Header   Header `id:"0000000B"`
+	Header   Header
 	SystemID string
 	Password string
 }
 
 // QueryBroadcastSM see SMPP v5, section 4.6.1.1 (107p)
 type QueryBroadcastSM struct {
-	Header     Header `id:"00000111"`
+	Header     Header
 	MessageID  string
 	SourceAddr Address
 	Tags       Tags
@@ -232,14 +232,14 @@ func (p *QueryBroadcastSM) Resp() interface{} {
 
 // QueryBroadcastSMResp see SMPP v5, section 4.6.1.3 (108p)
 type QueryBroadcastSMResp struct {
-	Header    Header `id:"80000111"`
+	Header    Header
 	MessageID string
 	Tags      Tags
 }
 
 // QuerySM see SMPP v5, section 4.5.2.1 (101p)
 type QuerySM struct {
-	Header     Header `id:"00000003"`
+	Header     Header
 	MessageID  string
 	SourceAddr Address
 }
@@ -250,7 +250,7 @@ func (p *QuerySM) Resp() interface{} {
 
 // QuerySMResp see SMPP v5, section 4.5.2.2 (103p)
 type QuerySMResp struct {
-	Header       Header `id:"80000003"`
+	Header       Header
 	MessageID    string
 	FinalDate    string
 	MessageState MessageState
@@ -259,7 +259,7 @@ type QuerySMResp struct {
 
 // ReplaceSM see SMPP v5, section 4.5.3.1 (104p)
 type ReplaceSM struct {
-	Header               Header `id:"00000007"`
+	Header               Header
 	MessageID            string
 	SourceAddr           Address
 	ScheduleDeliveryTime string
@@ -275,12 +275,12 @@ func (p *ReplaceSM) Resp() interface{} {
 
 // ReplaceSMResp see SMPP v5, section 4.5.3.2 (106p)
 type ReplaceSMResp struct {
-	Header Header `id:"80000007"`
+	Header Header
 }
 
 // SubmitMulti see SMPP v5, section 4.2.3.1 (71p)
 type SubmitMulti struct {
-	Header               Header `id:"00000021"`
+	Header               Header
 	ServiceType          string
 	SourceAddr           Address
 	DestAddrList         DestinationAddresses
@@ -301,7 +301,7 @@ func (p *SubmitMulti) Resp() interface{} {
 
 // SubmitMultiResp see SMPP v5, section 4.2.3.2 (74p)
 type SubmitMultiResp struct {
-	Header           Header `id:"80000021"`
+	Header           Header
 	MessageID        string
 	UnsuccessfulSMEs UnsuccessfulRecords
 	Tags             Tags
@@ -309,7 +309,7 @@ type SubmitMultiResp struct {
 
 // SubmitSM see SMPP v5, section 4.2.1.1 (66p)
 type SubmitSM struct {
-	Header               Header `id:"00000004"`
+	Header               Header
 	ServiceType          string
 	SourceAddr           Address
 	DestAddr             Address
@@ -330,13 +330,13 @@ func (p *SubmitSM) Resp() interface{} {
 
 // SubmitSMResp see SMPP v5, section 4.2.1.2 (68p)
 type SubmitSMResp struct {
-	Header    Header `id:"80000004"`
+	Header    Header
 	MessageID string
 }
 
 // Unbind see SMPP v5, section 4.1.1.8 (61p)
 type Unbind struct {
-	Header Header `id:"00000006"`
+	Header Header
 }
 
 func (p *Unbind) Resp() interface{} {
@@ -345,5 +345,5 @@ func (p *Unbind) Resp() interface{} {
 
 // UnbindResp see SMPP v5, section 4.1.1.9 (62p)
 type UnbindResp struct {
-	Header Header `id:"80000006"`
+	Header Header
 }

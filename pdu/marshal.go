@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"io"
 	"reflect"
-	"strconv"
 )
 
 func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
@@ -82,11 +81,7 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 		case reflect.Array, reflect.Map, reflect.Slice, reflect.Struct:
 			switch v := field.Addr().Interface().(type) {
 			case *Header:
-				var parsed uint64
-				if value := p.Type().Field(i).Tag.Get(_ID); value != "" {
-					parsed, err = strconv.ParseUint(value, 16, 32)
-					v.CommandID = CommandID(parsed)
-				}
+				v.CommandID = findCommandID(p.Type())
 				if err == nil && v.Sequence > 0 {
 					_ = binary.Write(&buf, binary.BigEndian, v)
 				} else {
@@ -116,4 +111,13 @@ write:
 		binary.BigEndian.PutUint32(data[0:4], uint32(buf.Len()))
 	}
 	return buf.WriteTo(w)
+}
+
+func findCommandID(target reflect.Type) CommandID {
+	for id, t := range types {
+		if target == t {
+			return id
+		}
+	}
+	panic("unregistered command id")
 }
