@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -29,7 +28,7 @@ func init() {
 	var confPath string
 	flag.StringVar(&confPath, "c", "configure.json", "configure file-path")
 
-	if data, err := ioutil.ReadFile(confPath); err != nil {
+	if data, err := os.ReadFile(confPath); err != nil {
 		log.Fatalln(err)
 	} else if result, _ := Validate(NewBytesLoader(schemaFile), NewBytesLoader(data)); !result.Valid() {
 		for _, desc := range result.Errors() {

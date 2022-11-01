@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	. "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -16,7 +16,7 @@ var configure Configuration
 func init() {
 	var confPath string
 	flag.StringVar(&confPath, "conf", "configure.json", "configure file-path")
-	if data, err := ioutil.ReadFile(confPath); err != nil {
+	if data, err := os.ReadFile(confPath); err != nil {
 		log.Panic(err)
 	} else if err = json.Unmarshal(data, &configure); err != nil {
 		log.Panic(err)
