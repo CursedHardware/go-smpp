@@ -9,7 +9,7 @@ import (
 )
 
 func TestMarshal(t *testing.T) {
-	var pdu interface{}
+	var pdu any
 	{
 		pdu = new(DeliverSM)
 		_, err := unmarshal(bytes.NewReader(nil), pdu)

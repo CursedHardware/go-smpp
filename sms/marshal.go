@@ -9,7 +9,7 @@ import (
 )
 
 //goland:noinspection SpellCheckingInspection
-func Unmarshal(r io.Reader) (packet interface{}, err error) {
+func Unmarshal(r io.Reader) (packet any, err error) {
 	buf := bufio.NewReader(r)
 	kind, failure, err := getType(buf)
 	if err != nil {
@@ -40,7 +40,7 @@ func Unmarshal(r io.Reader) (packet interface{}, err error) {
 	return
 }
 
-func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
+func unmarshal(buf *bufio.Reader, packet any) (n int64, err error) {
 	p := reflect.ValueOf(packet)
 	if p.Kind() == reflect.Ptr {
 		p = p.Elem()
@@ -78,7 +78,7 @@ func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
 			}
 		case io.ReaderFrom:
 			_, err = field.ReadFrom(buf)
-		case *interface{}:
+		case *any:
 			switch {
 			case abbr == "VP" && validityPeriodFormat == 0b01:
 				var duration EnhancedDuration
@@ -107,7 +107,7 @@ func unmarshal(buf *bufio.Reader, packet interface{}) (n int64, err error) {
 	return
 }
 
-func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
+func Marshal(w io.Writer, packet any) (n int64, err error) {
 	p := reflect.ValueOf(packet)
 	if p.Kind() == reflect.Ptr {
 		p = p.Elem()
@@ -118,7 +118,7 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 	for i := 0; i < p.NumField(); i++ {
 		parameterIndicator.Set(t.Field(i).Tag.Get("TP"))
 		switch field := p.Field(i).Addr().Interface().(type) {
-		case *interface{}:
+		case *any:
 			switch (*field).(type) {
 			case EnhancedDuration:
 				validityPeriodFormat = 0b01
@@ -148,7 +148,7 @@ func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
 			}
 		case io.WriterTo:
 			_, err = field.WriteTo(&buf)
-		case *interface{}:
+		case *any:
 			switch field := (*field).(type) {
 			case EnhancedDuration:
 				_, err = field.WriteTo(&buf)
@@ -183,7 +183,7 @@ func getType(buf *bufio.Reader) (kind MessageType, failure bool, err error) {
 	return
 }
 
-func unmarshalFlags(c byte, flags interface{}) (err error) {
+func unmarshalFlags(c byte, flags any) (err error) {
 	v := reflect.ValueOf(flags)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -206,7 +206,7 @@ func unmarshalFlags(c byte, flags interface{}) (err error) {
 	return
 }
 
-func marshalFlags(flags interface{}) (c byte, err error) {
+func marshalFlags(flags any) (c byte, err error) {
 	v := reflect.ValueOf(flags)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()

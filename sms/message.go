@@ -35,7 +35,7 @@ type Submit struct {
 	DestinationAddress Address     `TP:"DA"`
 	ProtocolIdentifier byte        `TP:"PID"`
 	DataCoding         byte        `TP:"DCS"`
-	ValidityPeriod     interface{} `TP:"VP"`
+	ValidityPeriod     any         `TP:"VP"`
 	UserData           []byte      `TP:"UD"`
 }
 

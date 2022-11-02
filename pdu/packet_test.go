@@ -19,8 +19,8 @@ var (
 //goland:noinspection SpellCheckingInspection
 var mapping = []struct {
 	Packet         string
-	Expected       interface{}
-	Response       interface{}
+	Expected       any
+	Response       any
 	ResponsePacket string
 }{
 	{
@@ -292,7 +292,7 @@ func TestPacket(t *testing.T) {
 		require.NoError(t, err, sample.Expected)
 		require.Equal(t, decoded, buf.Bytes(), hex.EncodeToString(buf.Bytes()))
 
-		parsed, err := ReadPDU(bytes.NewReader(decoded))
+		parsed, err := Unmarshal(bytes.NewReader(decoded))
 		require.NoError(t, err, sample.Packet)
 		require.NotNil(t, parsed)
 		require.Equal(t, sample.Expected, parsed)
@@ -309,7 +309,7 @@ func TestPacket(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, decoded, buf.Bytes(), hex.EncodeToString(buf.Bytes()))
 
-			parsed, err = ReadPDU(&buf)
+			parsed, err = Unmarshal(&buf)
 			require.NoError(t, err, resp)
 			require.NotNil(t, parsed)
 			require.Equal(t, sample.Response, parsed)

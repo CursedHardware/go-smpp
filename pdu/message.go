@@ -59,7 +59,7 @@ func (p ShortMessage) WriteTo(w io.Writer) (n int64, err error) {
 	return buf.WriteTo(w)
 }
 
-func (p *ShortMessage) Prepare(pdu interface{}) {
+func (p *ShortMessage) Prepare(pdu any) {
 	if _, ok := pdu.(*ReplaceSM); ok {
 		p.DataCoding = NoCoding
 	} else if p.UDHeader == nil {

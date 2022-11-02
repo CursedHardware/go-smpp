@@ -42,7 +42,7 @@ func onRemoveClientCommands() {
 func onConnectToServer(c *ishell.Context) {
 	c.ShowPrompt(false)
 	defer c.ShowPrompt(true)
-	if conn != nil {
+	if session != nil {
 		fmt.Println("connected")
 		fmt.Println("use `disconnect` command, disconnect")
 		return
@@ -76,16 +76,15 @@ func onConnectToServer(c *ishell.Context) {
 		fmt.Println("Error:", err.Error())
 		return
 	}
-	conn = smpp.NewConn(context.Background(), parent)
-	conn.WriteTimeout = time.Minute
-	conn.ReadTimeout = time.Minute
-	go conn.Watch()
-	go onWatchInboundMessages(conn)
+	session = smpp.NewSession(context.Background(), parent)
+	session.WriteTimeout = time.Minute
+	session.ReadTimeout = time.Minute
+	go onWatchInboundMessages(session)
 	defer onAddClientCommands()
 	fmt.Printf("Connect %q successfully\n", address)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	resp, err := conn.Submit(ctx, &pdu.BindReceiver{
+	resp, err := session.Submit(ctx, &pdu.BindReceiver{
 		SystemID:   systemId,
 		Password:   password,
 		SystemType: systemType,
@@ -97,7 +96,7 @@ func onConnectToServer(c *ishell.Context) {
 	}
 	spew.Dump(resp)
 	if status := pdu.ReadCommandStatus(resp); status == 0 {
-		go conn.EnquireLink(time.Minute, time.Minute)
+		go session.EnquireLink(context.Background(), time.Minute, time.Minute)
 		fmt.Println("Bind successfully")
 	}
 }
@@ -106,10 +105,10 @@ func onDisconnectToServer(c *ishell.Context) {
 	c.ShowPrompt(false)
 	defer c.ShowPrompt(true)
 	defer onRemoveClientCommands()
-	if err := conn.Close(); err != nil {
+	if err := session.Close(context.Background()); err != nil {
 		fmt.Println(err)
 	}
-	conn = nil
+	session = nil
 }
 
 func onSendMessageToServer(c *ishell.Context) {
@@ -142,7 +141,7 @@ func onSendMessageToServer(c *ishell.Context) {
 			Message:    message,
 		}
 		spew.Dump(packet)
-		resp, err := conn.Submit(context.Background(), packet)
+		resp, err := session.Submit(context.Background(), packet)
 		if err != nil {
 			fmt.Println("Error:", err.Error())
 			break
@@ -179,7 +178,7 @@ func onSendUSSDCommandToServer(c *ishell.Context) {
 		return
 	}
 	spew.Dump(packet)
-	resp, err := conn.Submit(context.Background(), packet)
+	resp, err := session.Submit(context.Background(), packet)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		return
@@ -215,7 +214,7 @@ func onSendQueryCommandToServer(c *ishell.Context) {
 		}
 	}
 	spew.Dump(packet)
-	resp, err := conn.Submit(context.Background(), packet)
+	resp, err := session.Submit(context.Background(), packet)
 	if err != nil {
 		fmt.Println("Error:", err.Error())
 		return
@@ -223,10 +222,10 @@ func onSendQueryCommandToServer(c *ishell.Context) {
 	spew.Dump(resp)
 }
 
-func onWatchInboundMessages(conn *smpp.Conn) {
+func onWatchInboundMessages(session *smpp.Session) {
 	var err error
 	for {
-		packet := <-conn.PDU()
+		packet := <-session.PDU()
 		if packet == nil {
 			return
 		}
@@ -236,7 +235,7 @@ func onWatchInboundMessages(conn *smpp.Conn) {
 		if p, ok := packet.(pdu.Responsable); ok {
 			resp := p.Resp()
 			spew.Dump(resp)
-			if err = conn.Send(resp); err != nil {
+			if err = session.Send(resp); err != nil {
 				fmt.Println(err)
 			}
 		}

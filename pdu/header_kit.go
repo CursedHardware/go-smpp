@@ -4,27 +4,27 @@ import (
 	"reflect"
 )
 
-func ReadSequence(packet interface{}) int32 {
+func ReadSequence(packet any) int32 {
 	if h := getHeader(packet); h != nil {
 		return h.Sequence
 	}
 	return 0
 }
 
-func WriteSequence(packet interface{}, sequence int32) {
+func WriteSequence(packet any, sequence int32) {
 	if h := getHeader(packet); h != nil {
 		h.Sequence = sequence
 	}
 }
 
-func ReadCommandStatus(packet interface{}) CommandStatus {
+func ReadCommandStatus(packet any) CommandStatus {
 	if h := getHeader(packet); h != nil {
 		return h.CommandStatus
 	}
 	return 0
 }
 
-func getHeader(packet interface{}) *Header {
+func getHeader(packet any) *Header {
 	p := reflect.ValueOf(packet)
 	if p.Kind() == reflect.Ptr {
 		p = p.Elem()

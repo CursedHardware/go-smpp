@@ -5,7 +5,7 @@ import (
 	"github.com/abiosoft/ishell"
 )
 
-var conn *smpp.Conn
+var session *smpp.Session
 
 var shell = ishell.New()
 

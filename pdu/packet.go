@@ -3,7 +3,7 @@ package pdu
 import . "github.com/M2MGateway/go-smpp/coding"
 
 type Responsable interface {
-	Resp() interface{}
+	Resp() any
 }
 
 // AlertNotification see SMPP v5, section 4.1.3.1 (64p)
@@ -24,7 +24,7 @@ type BindReceiver struct {
 	AddressRange Address // see section 4.7.3.1
 }
 
-func (p *BindReceiver) Resp() interface{} {
+func (p *BindReceiver) Resp() any {
 	return &BindReceiverResp{Header: Header{Sequence: p.Header.Sequence}, SystemID: p.SystemID}
 }
 
@@ -45,7 +45,7 @@ type BindTransceiver struct {
 	AddressRange Address // see section 4.7.3.1
 }
 
-func (p *BindTransceiver) Resp() interface{} {
+func (p *BindTransceiver) Resp() any {
 	return &BindTransceiverResp{Header: Header{Sequence: p.Header.Sequence}, SystemID: p.SystemID}
 }
 
@@ -66,7 +66,7 @@ type BindTransmitter struct {
 	AddressRange Address // see section 4.7.3.1
 }
 
-func (p *BindTransmitter) Resp() interface{} {
+func (p *BindTransmitter) Resp() any {
 	return &BindTransmitterResp{Header: Header{Sequence: p.Header.Sequence}, SystemID: p.SystemID}
 }
 
@@ -92,7 +92,7 @@ type BroadcastSM struct {
 	Tags                 Tags
 }
 
-func (p *BroadcastSM) Resp() interface{} {
+func (p *BroadcastSM) Resp() any {
 	return &BroadcastSMResp{Header: Header{Sequence: p.Header.Sequence}, MessageID: p.MessageID}
 }
 
@@ -112,7 +112,7 @@ type CancelBroadcastSM struct {
 	Tags        Tags
 }
 
-func (p *CancelBroadcastSM) Resp() interface{} {
+func (p *CancelBroadcastSM) Resp() any {
 	return &CancelBroadcastSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -130,7 +130,7 @@ type CancelSM struct {
 	DestAddr    Address
 }
 
-func (p *CancelSM) Resp() interface{} {
+func (p *CancelSM) Resp() any {
 	return &CancelSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -151,7 +151,7 @@ type DataSM struct {
 	Tags               Tags
 }
 
-func (p *DataSM) Resp() interface{} {
+func (p *DataSM) Resp() any {
 	return &DataSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -179,7 +179,7 @@ type DeliverSM struct {
 	Tags                 Tags
 }
 
-func (p *DeliverSM) Resp() interface{} {
+func (p *DeliverSM) Resp() any {
 	return &DeliverSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -196,7 +196,7 @@ type EnquireLink struct {
 	Tags   Tags
 }
 
-func (p *EnquireLink) Resp() interface{} {
+func (p *EnquireLink) Resp() any {
 	return &EnquireLinkResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -226,7 +226,7 @@ type QueryBroadcastSM struct {
 	Tags       Tags
 }
 
-func (p *QueryBroadcastSM) Resp() interface{} {
+func (p *QueryBroadcastSM) Resp() any {
 	return &QueryBroadcastSMResp{Header: Header{Sequence: p.Header.Sequence}, MessageID: p.MessageID}
 }
 
@@ -244,7 +244,7 @@ type QuerySM struct {
 	SourceAddr Address
 }
 
-func (p *QuerySM) Resp() interface{} {
+func (p *QuerySM) Resp() any {
 	return &QuerySMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -269,7 +269,7 @@ type ReplaceSM struct {
 	Tags                 Tags
 }
 
-func (p *ReplaceSM) Resp() interface{} {
+func (p *ReplaceSM) Resp() any {
 	return &ReplaceSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -295,7 +295,7 @@ type SubmitMulti struct {
 	Tags                 Tags
 }
 
-func (p *SubmitMulti) Resp() interface{} {
+func (p *SubmitMulti) Resp() any {
 	return &SubmitMultiResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -324,7 +324,7 @@ type SubmitSM struct {
 	Tags                 Tags
 }
 
-func (p *SubmitSM) Resp() interface{} {
+func (p *SubmitSM) Resp() any {
 	return &SubmitSMResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 
@@ -339,7 +339,7 @@ type Unbind struct {
 	Header Header
 }
 
-func (p *Unbind) Resp() interface{} {
+func (p *Unbind) Resp() any {
 	return &UnbindResp{Header: Header{Sequence: p.Header.Sequence}}
 }
 

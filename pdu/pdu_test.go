@@ -17,7 +17,7 @@ func TestReadPDU(t *testing.T) {
 	for _, packet := range failedList {
 		decoded, err := hex.DecodeString(packet)
 		require.NoError(t, err)
-		_, err = ReadPDU(bytes.NewReader(decoded))
+		_, err = Unmarshal(bytes.NewReader(decoded))
 		require.Error(t, err)
 	}
 }

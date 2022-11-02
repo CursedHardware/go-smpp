@@ -27,7 +27,7 @@ func TestParameterIndicator(t *testing.T) {
 }
 
 func TestFlags(t *testing.T) {
-	tests := map[byte]interface{}{
+	tests := map[byte]any{
 		0b00000011: &Flags{
 			MessageType: 0b110,
 		},

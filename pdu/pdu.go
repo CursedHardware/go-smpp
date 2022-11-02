@@ -6,7 +6,7 @@ import (
 	"reflect"
 )
 
-func ReadPDU(r io.Reader) (pdu interface{}, err error) {
+func Unmarshal(r io.Reader) (pdu any, err error) {
 	var buf bytes.Buffer
 	r = io.TeeReader(r, &buf)
 	header := new(Header)

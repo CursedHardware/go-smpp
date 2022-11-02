@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
+func unmarshal(r io.Reader, packet any) (n int64, err error) {
 	buf := bufio.NewReader(r)
 	v := reflect.ValueOf(packet)
 	if v.Kind() == reflect.Ptr {
@@ -59,7 +59,7 @@ func unmarshal(r io.Reader, packet interface{}) (n int64, err error) {
 	return
 }
 
-func Marshal(w io.Writer, packet interface{}) (n int64, err error) {
+func Marshal(w io.Writer, packet any) (n int64, err error) {
 	var buf bytes.Buffer
 	p := reflect.ValueOf(packet)
 	if p.Kind() == reflect.Ptr {

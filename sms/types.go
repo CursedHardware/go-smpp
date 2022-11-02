@@ -5,9 +5,9 @@ type directionSetter interface {
 }
 
 type SMPPMarshaller interface {
-	MarshalSMPP() (interface{}, error)
+	MarshalSMPP() (any, error)
 }
 
 type SMPPUnmarshaler interface {
-	UnmarshalSMPP(interface{}) error
+	UnmarshalSMPP(any) error
 }
