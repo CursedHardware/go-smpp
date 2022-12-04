@@ -14,8 +14,7 @@ import (
 type Session struct {
 	parent       net.Conn
 	receiveQueue chan any
-	pending      map[int32]func(any)
-	pendingLock  sync.Mutex
+	pending      *sync.Map
 	NextSequence func() int32
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
@@ -26,7 +25,7 @@ func NewSession(ctx context.Context, parent net.Conn) (session *Session) {
 	session = &Session{
 		parent:       parent,
 		receiveQueue: make(chan any),
-		pending:      make(map[int32]func(any)),
+		pending:      new(sync.Map),
 		NextSequence: random.Int31,
 		ReadTimeout:  time.Minute * 15,
 		WriteTimeout: time.Minute * 15,
@@ -61,8 +60,8 @@ func (c *Session) watch(ctx context.Context) {
 			})
 			continue
 		}
-		if callback, ok := c.pending[pdu.ReadSequence(packet)]; ok {
-			callback(packet)
+		if callback, ok := c.pending.Load(pdu.ReadSequence(packet)); ok {
+			callback.(func(any))(packet)
 		} else {
 			c.receiveQueue <- packet
 		}
@@ -70,21 +69,19 @@ func (c *Session) watch(ctx context.Context) {
 }
 
 func (c *Session) Submit(ctx context.Context, packet pdu.Responsable) (resp any, err error) {
-	c.pendingLock.Lock()
-	defer c.pendingLock.Unlock()
 	sequence := c.NextSequence()
 	pdu.WriteSequence(packet, sequence)
 	if err = c.Send(packet); err != nil {
 		return
 	}
 	returns := make(chan any, 1)
-	c.pending[sequence] = func(resp any) { returns <- resp }
-	defer delete(c.pending, sequence)
+	c.pending.Store(sequence, func(resp any) { returns <- resp })
 	select {
 	case <-ctx.Done():
 		err = ErrConnectionClosed
 	case resp = <-returns:
 	}
+	c.pending.Delete(sequence)
 	return
 }
 
